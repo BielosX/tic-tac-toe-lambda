@@ -23,3 +23,11 @@ subprojects {
         }
     }
 }
+
+configure(subprojects.findAll {
+    (it.name != "commons")
+}) {
+    dependencies {
+        compileOnly project(":commons")
+    }
+}

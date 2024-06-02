@@ -1,0 +1,96 @@
+#file: noinspection MaybeTerraformTemplateInspection
+openapi: "3.0.3"
+info:
+  version: "1.0.0"
+  title: "Tic Tac Toe"
+paths:
+  /games/{gameId}:
+    get:
+      operationId: describeGame
+      description: "Get name by ID"
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        httpMethod: POST
+        uri: "${describe_game_arn}"
+        payloadFormatVersion: "2.0"
+        passthroughBehavior: when_no_templates
+      responses:
+        200:
+          description: "Game exists"
+        404:
+          description: "Game with ID not found"
+      parameters:
+        - name: gameId
+          description: "Get game by Id"
+          in: path
+          required: true
+          schema:
+            type: string
+  /games:
+    post:
+      operationId: startGame
+      description: "Start new game"
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        httpMethod: POST
+        uri: "${start_game_arn}"
+        payloadFormatVersion: "2.0"
+        passthroughBehavior: when_no_templates
+      parameters:
+        - name: PlayerId
+          in: header
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: "New game successfully started"
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/StartGame'
+  /games/{gameId}/moves:
+    parameters:
+      - name: gameId
+        description: "Game Identifier"
+        in: path
+        required: true
+        schema:
+          type: string
+    post:
+      operationId: playerMove
+      description: "Adds new player move"
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        httpMethod: POST
+        uri: "${player_move_arn}"
+        payloadFormatVersion: "2.0"
+        passthroughBehavior: when_no_templates
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/PlayerMove'
+      responses:
+        200:
+          description: "Move properly commited"
+components:
+  schemas:
+    StartGame:
+      type: object
+      properties:
+        opponentId:
+          type: string
+    PlayerMove:
+      type: object
+      properties:
+        positionX:
+          type: number
+        positionY:
+          type: number
+        symbol:
+          type: string
+          enum:
+            - CROSS
+            - NOUGHT

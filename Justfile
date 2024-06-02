@@ -44,6 +44,10 @@ deploy-packages: deploy-artifacts-bucket
         "s3://${artifacts_bucket}/commons-{{ timestamp }}.zip"
     aws s3 cp "{{ justfile_directory() }}/lambdas/player-move/build/libs/player-move.jar" \
         "s3://${artifacts_bucket}/player-move-{{ timestamp }}.jar"
+    aws s3 cp "{{ justfile_directory() }}/lambdas/start-game/build/libs/start-game.jar" \
+        "s3://${artifacts_bucket}/start-game-{{ timestamp }}.jar"
+    aws s3 cp "{{ justfile_directory() }}/lambdas/describe-game/build/libs/describe-game.jar" \
+        "s3://${artifacts_bucket}/describe-game-{{ timestamp }}.jar"
     aws ssm put-parameter --name "{{ deployment-id-parameter }}" --value "{{ timestamp }}" --overwrite
 
 deploy-lambda: deploy-artifacts-bucket tofu-init-lambda deploy-packages
@@ -80,4 +84,4 @@ delete-backend: clean-bucket
 destroy: destroy-lambda destroy-artifacts-bucket delete-backend
 
 doc:
-    redocly build-docs -o index.html "{{ justfile_directory() }}/infra/modules/lambda/openapi.yaml"
+    redocly build-docs -o index.html "{{ justfile_directory() }}/spec/openapi.yaml"

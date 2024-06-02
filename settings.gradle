@@ -2,3 +2,7 @@ include 'commons'
 project(':commons').projectDir = file('lambdas/commons')
 include 'player-move'
 project(':player-move').projectDir = file('lambdas/player-move')
+include('start-game')
+project(':start-game').projectDir = file('lambdas/start-game')
+include('describe-game')
+project(':describe-game').projectDir = file('lambdas/describe-game')

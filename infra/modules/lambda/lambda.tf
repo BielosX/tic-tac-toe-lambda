@@ -1,6 +1,8 @@
 locals {
   names = {
-    "player-move" : "org.ttt.playermove.PlayerMove::handleRequest"
+    "player-move" : "org.ttt.playermove.PlayerMove::handleRequest",
+    "start-game" : "org.ttt.startgame.StartGame::handleRequest",
+    "describe-game" : "org.ttt.describegame.DescribeGame::handleRequest"
   }
 }
 
@@ -14,6 +16,11 @@ resource "aws_lambda_function" "lambda" {
   runtime       = "java17"
   s3_key        = "${each.key}-${var.deployment_id}.jar"
   s3_bucket     = var.artifacts_bucket
+  environment {
+    variables = {
+      GAMES_TABLE_NAME : aws_dynamodb_table.games_table.name
+    }
+  }
 }
 
 resource "aws_lambda_permission" "lambda_permission" {
