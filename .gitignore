@@ -30,3 +30,5 @@ replay_pid*
 *.tfstate
 build
 .gradle
+
+index.html

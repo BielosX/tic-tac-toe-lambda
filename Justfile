@@ -78,3 +78,6 @@ delete-backend: clean-bucket
     pipenv run python "{{ justfile_directory() }}/scripts/delete-stack.py" "{{ stack-name }}"
 
 destroy: destroy-lambda destroy-artifacts-bucket delete-backend
+
+doc:
+    redocly build-docs -o index.html "{{ justfile_directory() }}/infra/modules/lambda/openapi.yaml"
