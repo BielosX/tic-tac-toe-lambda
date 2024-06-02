@@ -38,16 +38,12 @@ tofu-init-lambda:
 
 deploy-packages: deploy-artifacts-bucket
     #!/bin/bash -e
-    {{ justfile_directory() }}/gradlew build :commons:buildZip
+    {{ justfile_directory() }}/gradlew clean build :commons:buildZip copyJar
     artifacts_bucket=$(tofu -chdir="{{ justfile_directory() }}/infra/live/artifacts-bucket" output -raw bucket_id)
-    aws s3 cp "{{ justfile_directory() }}/lambdas/commons/build/distributions/commons.zip" \
-        "s3://${artifacts_bucket}/commons-{{ timestamp }}.zip"
-    aws s3 cp "{{ justfile_directory() }}/lambdas/player-move/build/libs/player-move.jar" \
-        "s3://${artifacts_bucket}/player-move-{{ timestamp }}.jar"
-    aws s3 cp "{{ justfile_directory() }}/lambdas/start-game/build/libs/start-game.jar" \
-        "s3://${artifacts_bucket}/start-game-{{ timestamp }}.jar"
-    aws s3 cp "{{ justfile_directory() }}/lambdas/describe-game/build/libs/describe-game.jar" \
-        "s3://${artifacts_bucket}/describe-game-{{ timestamp }}.jar"
+    export PIPENV_PIPFILE="{{ justfile_directory() }}/scripts/Pipfile"
+    pipenv install
+    pipenv run python "{{ justfile_directory() }}/scripts/upload-artifacts.py" "{{ justfile_directory() }}/build" \
+      "${artifacts_bucket}" "{{ timestamp }}"
     aws ssm put-parameter --name "{{ deployment-id-parameter }}" --value "{{ timestamp }}" --overwrite
 
 deploy-lambda: deploy-artifacts-bucket tofu-init-lambda deploy-packages

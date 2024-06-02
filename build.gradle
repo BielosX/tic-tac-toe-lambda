@@ -30,4 +30,8 @@ configure(subprojects.findAll {
     dependencies {
         compileOnly project(":commons")
     }
+    tasks.register('copyJar', Copy) {
+        from jar
+        into rootProject.layout.buildDirectory
+    }
 }
