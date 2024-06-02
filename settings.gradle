@@ -1,0 +1,4 @@
+include 'commons'
+project(':commons').projectDir = file('lambdas/commons')
+include 'player-move'
+project(':player-move').projectDir = file('lambdas/player-move')

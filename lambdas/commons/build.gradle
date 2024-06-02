@@ -1,0 +1,18 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+    api 'com.amazonaws:aws-lambda-java-core:1.2.3'
+    api 'com.amazonaws:aws-lambda-java-events:3.11.5'
+    api 'org.slf4j:slf4j-api:2.0.13'
+    api 'org.slf4j:slf4j-reload4j:2.0.13'
+    api 'software.amazon.awssdk:dynamodb:2.25.61'
+}
+
+tasks.register('buildZip', Zip) {
+    into('java/lib') {
+        from(jar)
+        from(configurations.runtimeClasspath)
+    }
+}
