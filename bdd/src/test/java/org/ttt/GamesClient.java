@@ -3,7 +3,6 @@ package org.ttt;
 import feign.Headers;
 import feign.Param;
 import feign.RequestLine;
-import java.util.Optional;
 
 public interface GamesClient {
   @RequestLine("GET /games/{gameId}")
