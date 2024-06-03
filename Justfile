@@ -4,6 +4,7 @@ name-prefix := "tic-tac-toe"
 stack-name := name-prefix + "-backend"
 timestamp := `date +%s`
 deployment-id-parameter := "/tic-tac-toe/deployment-id"
+stage-url-parameter := "/tic-tac-toe/stage-url"
 
 format-tf:
     tofu fmt -recursive "{{ justfile_directory() }}"
@@ -84,6 +85,6 @@ doc:
 
 bdd:
     #!/bin/bash -e
-    stage_url=$(aws ssm get-parameter --name "/tic-tac-toe/stage-url" | jq -r '.Parameter.Value')
+    stage_url=$(aws ssm get-parameter --name "{{ stage-url-parameter }}" | jq -r '.Parameter.Value')
     export API_URL="${stage_url}"
     {{ justfile_directory() }}/gradlew clean :bdd:test -PbddTests
