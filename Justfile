@@ -81,3 +81,9 @@ destroy: destroy-lambda destroy-artifacts-bucket delete-backend
 
 doc:
     redocly build-docs -o index.html "{{ justfile_directory() }}/spec/openapi.yaml"
+
+bdd:
+    #!/bin/bash -e
+    stage_url=$(aws ssm get-parameter --name "/tic-tac-toe/stage-url" | jq -r '.Parameter.Value')
+    export API_URL="${stage_url}"
+    {{ justfile_directory() }}/gradlew clean :bdd:test -PbddTests
