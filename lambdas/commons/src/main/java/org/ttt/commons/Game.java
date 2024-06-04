@@ -18,10 +18,10 @@ public class Game {
   @Getter(onMethod_ = @DynamoDbSecondaryPartitionKey(indexNames = "PlayerIdIndex"))
   String playerId;
 
-  @Getter String opponent;
+  String opponent;
 
   ZonedDateTime lastUpdate;
 
-  @Getter(onMethod_ = @DynamoDbUpdateBehavior(UpdateBehavior.WRITE_IF_NOT_EXISTS))
+  @Getter(onMethod_ = {@DynamoDbUpdateBehavior(UpdateBehavior.WRITE_IF_NOT_EXISTS)})
   ZonedDateTime created;
 }

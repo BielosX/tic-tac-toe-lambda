@@ -18,7 +18,9 @@ resource "aws_lambda_function" "lambda" {
   s3_bucket     = var.artifacts_bucket
   environment {
     variables = {
-      GAMES_TABLE_NAME : aws_dynamodb_table.games_table.name
+      GAMES_TABLE_NAME : aws_dynamodb_table.games_table.name,
+      GAMES_COUNT_TABLE_NAME : aws_dynamodb_table.games_count_table.name,
+      MAX_GAMES_COUNT : 2
     }
   }
 }

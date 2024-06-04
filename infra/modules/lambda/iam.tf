@@ -15,10 +15,14 @@ data "aws_iam_policy_document" "lambda_policy" {
     actions = [
       "dynamodb:PutItem",
       "dynamodb:GetItem",
+      "dynamodb:UpdateItem",
       "dynamodb:Scan",
       "dynamodb:Query"
     ]
-    resources = [aws_dynamodb_table.games_table.arn]
+    resources = [
+      aws_dynamodb_table.games_table.arn,
+      aws_dynamodb_table.games_count_table.arn
+    ]
   }
 }
 
