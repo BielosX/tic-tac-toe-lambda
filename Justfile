@@ -66,7 +66,8 @@ destroy-lambda:
     #!/bin/bash -e
     state_bucket=$(aws ssm get-parameter --name "{{name-prefix}}-state-bucket" | jq -r '.Parameter.Value')
     tofu -chdir="{{ justfile_directory() }}/infra/live/lambda" destroy -auto-approve \
-        -var="deployment_id=''" -var="artifacts_bucket_backend_bucket=${state_bucket}"
+        -var="deployment_id=''" -var="artifacts_bucket_backend_bucket=${state_bucket}" \
+        -var="audience=''" -var="issuer=https://dummy.com/"
 
 clean-bucket:
     #!/bin/bash
