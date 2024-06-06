@@ -6,3 +6,11 @@ variable "deployment_id" {
   type    = string
   default = ""
 }
+
+variable "audience" {
+  type = string
+}
+
+variable "issuer" {
+  type = string
+}

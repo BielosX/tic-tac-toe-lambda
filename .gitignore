@@ -32,3 +32,4 @@ build
 .gradle
 
 index.html
+!gradle-wrapper.jar

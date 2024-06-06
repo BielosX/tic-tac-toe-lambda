@@ -8,6 +8,8 @@ paths:
     get:
       operationId: describeGame
       description: "Get name by ID"
+      security:
+        - authorizer: []
       x-amazon-apigateway-integration:
         type: aws_proxy
         httpMethod: POST
@@ -76,6 +78,19 @@ paths:
         200:
           description: "Move properly commited"
 components:
+  securitySchemes:
+    authorizer:
+      type: apiKey
+      name: Authorization
+      in: header
+      x-amazon-apigateway-authorizer:
+        type: jwt
+        identitySource : "$request.header.Authorization"
+        authorizerPayloadFormatVersion: "2.0"
+        jwtConfiguration:
+          audience:
+            - "${audience}"
+          issuer: "${issuer}"
   schemas:
     StartGame:
       type: object

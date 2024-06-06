@@ -5,6 +5,8 @@ stack-name := name-prefix + "-backend"
 timestamp := `date +%s`
 deployment-id-parameter := "/tic-tac-toe/deployment-id"
 stage-url-parameter := "/tic-tac-toe/stage-url"
+auth-issuer := ""
+auth-audience := ""
 
 format-tf:
     tofu fmt -recursive "{{ justfile_directory() }}"
@@ -52,7 +54,8 @@ deploy-lambda: deploy-artifacts-bucket tofu-init-lambda deploy-packages
     state_bucket=$(aws ssm get-parameter --name "{{name-prefix}}-state-bucket" | jq -r '.Parameter.Value')
     deployment_id=$(aws ssm get-parameter --name "{{ deployment-id-parameter }}" | jq -r '.Parameter.Value')
     tofu -chdir="{{ justfile_directory() }}/infra/live/lambda" apply -auto-approve \
-        -var="deployment_id=${deployment_id}" -var="artifacts_bucket_backend_bucket=${state_bucket}"
+        -var="deployment_id=${deployment_id}" -var="artifacts_bucket_backend_bucket=${state_bucket}" \
+        -var="audience={{ auth-audience }}" -var="issuer={{ auth-issuer }}"
 
 deploy: deploy-backend deploy-artifacts-bucket deploy-lambda
 

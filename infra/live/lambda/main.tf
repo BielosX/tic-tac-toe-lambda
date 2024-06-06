@@ -28,4 +28,6 @@ module "lambda" {
   source           = "../../modules/lambda"
   artifacts_bucket = data.terraform_remote_state.artifacts_bucket.outputs.bucket_id
   deployment_id    = var.deployment_id
+  audience         = var.audience
+  issuer           = var.issuer
 }

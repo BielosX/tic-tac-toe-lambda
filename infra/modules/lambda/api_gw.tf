@@ -6,6 +6,8 @@ resource "aws_apigatewayv2_api" "api" {
     player_move_arn : aws_lambda_function.lambda["player-move"].invoke_arn,
     start_game_arn : aws_lambda_function.lambda["start-game"].invoke_arn,
     describe_game_arn : aws_lambda_function.lambda["describe-game"].invoke_arn
+    issuer : var.issuer
+    audience : var.audience
   })
 }
 
