@@ -10,7 +10,7 @@ variable "artifacts_bucket" {
 variable "issuer" {
   type = string
   validation {
-    condition = can(regex("^https://.+$", var.issuer))
+    condition     = can(regex("^https://.+$", var.issuer))
     error_message = "Issuer should start with https://"
   }
 }

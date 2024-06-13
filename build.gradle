@@ -12,6 +12,7 @@ allprojects {
 
 subprojects {
     apply plugin: "java"
+    apply plugin: "groovy"
     apply plugin: "io.freefair.lombok"
     apply plugin: "com.diffplug.spotless"
     apply plugin: "com.adarshr.test-logger"
@@ -25,6 +26,12 @@ subprojects {
             removeUnusedImports()
             googleJavaFormat()
         }
+        groovy {
+            importOrder()
+            removeSemicolons()
+            greclipse()
+            excludeJava()
+        }
     }
 }
 
@@ -33,10 +40,25 @@ configure(subprojects.findAll {
 }) {
     dependencies {
         compileOnly project(":commons")
+        testImplementation project(":commons")
     }
     tasks.register('copyJar', Copy) {
         from jar
         into rootProject.layout.buildDirectory
+    }
+}
+
+configure(subprojects.findAll {
+    it.name != "bdd"
+}) {
+    dependencies {
+        testImplementation 'org.apache.groovy:groovy-all:4.0.21'
+        testImplementation platform('org.spockframework:spock-bom:2.4-M4-groovy-4.0')
+        testImplementation 'org.spockframework:spock-core'
+        testImplementation "org.testcontainers:localstack:1.19.8"
+    }
+    test {
+        useJUnitPlatform()
     }
 }
 

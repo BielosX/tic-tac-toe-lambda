@@ -14,6 +14,9 @@ format-tf:
 format-java:
     {{ justfile_directory() }}/gradlew spotlessJavaApply
 
+format-groovy:
+    {{ justfile_directory() }}/gradlew spotlessGroovyApply
+
 deploy-backend:
     aws cloudformation deploy \
       --template-file "{{ justfile_directory() }}/infra/backend.yaml" \

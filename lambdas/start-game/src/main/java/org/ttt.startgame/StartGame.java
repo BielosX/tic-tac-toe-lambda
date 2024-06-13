@@ -17,9 +17,17 @@ import org.ttt.commons.ObjectMapperFactory;
 public class StartGame implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
   private static final String PLAYER_ID_HEADER = "playerid";
   private final ObjectMapper mapper = ObjectMapperFactory.create();
-  private final GamesService gamesService = new GamesService();
+  private final GamesService gamesService;
 
-  private record CreateGame(String opponentId) {}
+  public StartGame() {
+    this.gamesService = new GamesService();
+  }
+
+  public StartGame(GamesService gamesService) {
+    this.gamesService = gamesService;
+  }
+
+  public record CreateGame(String opponentId) {}
 
   @Override
   public APIGatewayV2HTTPResponse handleRequest(
