@@ -6,10 +6,6 @@ import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
 import org.ttt.commons.ConstParametersProvider
 import org.ttt.commons.GamesService
-import software.amazon.awssdk.auth.credentials.AwsBasicCredentials
-import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider
-import software.amazon.awssdk.regions.Region
-import software.amazon.awssdk.services.dynamodb.DynamoDbClient
 import spock.lang.Shared
 import spock.lang.Specification
 
