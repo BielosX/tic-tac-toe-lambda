@@ -24,11 +24,7 @@ class StartGameSpec extends Specification {
 
 	def setupSpec() {
 		localstack.start()
-		def dynamoClient = DynamoDbClient.builder()
-				.endpointOverride(localstack.endpoint)
-				.credentialsProvider(StaticCredentialsProvider.create(AwsBasicCredentials.create(localstack.accessKey, localstack.secretKey)))
-				.region(Region.of(localstack.region))
-				.build()
+		def dynamoClient = LocalStackDynamoDbClientFactory.create(localstack)
 		def gamesTableName = "games-table"
 		def gamesCountTableName = "games-count-table"
 		TableBuilder.createGamesTable(dynamoClient, gamesTableName)
