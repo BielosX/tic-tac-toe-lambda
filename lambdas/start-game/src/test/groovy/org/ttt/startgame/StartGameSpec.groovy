@@ -1,21 +1,17 @@
 package org.ttt.startgame
 
-
 import groovy.json.JsonSlurper
-import org.testcontainers.containers.localstack.LocalStackContainer
-import org.testcontainers.utility.DockerImageName
 import org.ttt.commons.*
 import spock.lang.Shared
 import spock.lang.Specification
 
 class StartGameSpec extends Specification {
 	@Shared
-	def localstack = new LocalStackContainer(DockerImageName.parse("localstack/localstack:latest"))
-	.withServices(LocalStackContainer.Service.DYNAMODB)
+	def localstack = new DynamoDbLocalStackContainer()
 	@Shared
 	def parser = new JsonSlurper()
 	@Shared
-    StartGame uat
+	StartGame uat
 
 	def setupSpec() {
 		localstack.start()
@@ -36,7 +32,7 @@ class StartGameSpec extends Specification {
 		localstack.stop()
 	}
 
-	def "return newly created game"() {
+	def "should return newly created game"() {
 		given:
 		def hostPlayerId = UUID.randomUUID().toString()
 		def opponentId = UUID.randomUUID().toString()
@@ -56,5 +52,8 @@ class StartGameSpec extends Specification {
 		parsedBody.playerId == hostPlayerId
 		parsedBody.opponentId == opponentId
 		parsedBody.state == 'ACTIVE'
+	}
+
+	def "should return conflict when player tries to create a new game with max limit reached"() {
 	}
 }
