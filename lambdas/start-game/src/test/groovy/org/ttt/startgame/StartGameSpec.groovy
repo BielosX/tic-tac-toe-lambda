@@ -15,7 +15,7 @@ class StartGameSpec extends Specification {
 	@Shared
 	def parser = new JsonSlurper()
 	@Shared
-	def uat
+    StartGame uat
 
 	def setupSpec() {
 		localstack.start()
