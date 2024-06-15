@@ -30,6 +30,8 @@ paths:
             type: string
   /games:
     post:
+      security:
+        - authorizer: []
       operationId: startGame
       description: "Start new game"
       x-amazon-apigateway-integration:
@@ -38,12 +40,6 @@ paths:
         uri: "${start_game_arn}"
         payloadFormatVersion: "2.0"
         passthroughBehavior: when_no_templates
-      parameters:
-        - name: PlayerId
-          in: header
-          required: true
-          schema:
-            type: string
       responses:
         200:
           description: "New game successfully started"
@@ -61,6 +57,8 @@ paths:
         schema:
           type: string
     post:
+      security:
+        - authorizer: []
       operationId: playerMove
       description: "Adds new player move"
       x-amazon-apigateway-integration:

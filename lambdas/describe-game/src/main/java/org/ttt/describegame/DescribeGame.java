@@ -1,40 +1,27 @@
 package org.ttt.describegame;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.RequestHandler;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.ttt.commons.Game;
 import org.ttt.commons.GamesService;
 import org.ttt.commons.ObjectMapperFactory;
+import org.ttt.commons.SubjectAwareRequestHandler;
 
 @Slf4j
 @SuppressWarnings("unused")
-public class DescribeGame
-    implements RequestHandler<APIGatewayV2HTTPEvent, APIGatewayV2HTTPResponse> {
-  private static final String SUBJECT_KEY = "sub";
+public class DescribeGame extends SubjectAwareRequestHandler {
   private static final String GAME_ID_PARAM = "gameId";
   private final GamesService gamesService = new GamesService();
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
-  @Override
-  public APIGatewayV2HTTPResponse handleRequest(
-      APIGatewayV2HTTPEvent apiGatewayV2HTTPEvent, Context context) {
-    String subject =
-        Optional.ofNullable(
-                apiGatewayV2HTTPEvent
-                    .getRequestContext()
-                    .getAuthorizer()
-                    .getJwt()
-                    .getClaims()
-                    .get(SUBJECT_KEY))
-            .orElse("");
+  protected APIGatewayV2HTTPResponse handleRequestWithSubject(
+      String subject, APIGatewayV2HTTPEvent event, Context context) {
     log.info("Subject {} trying to fetch game data", subject);
-    String gameId = apiGatewayV2HTTPEvent.getPathParameters().get(GAME_ID_PARAM);
+    String gameId = event.getPathParameters().get(GAME_ID_PARAM);
     log.info("Trying to fetch Game with ID {}", gameId);
     return gamesService
         .getGame(gameId)

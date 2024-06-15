@@ -1,11 +1,10 @@
 package org.ttt.startgame
 
-import com.amazonaws.services.lambda.runtime.events.APIGatewayV2HTTPEvent
+
 import groovy.json.JsonSlurper
 import org.testcontainers.containers.localstack.LocalStackContainer
 import org.testcontainers.utility.DockerImageName
-import org.ttt.commons.ConstParametersProvider
-import org.ttt.commons.GamesService
+import org.ttt.commons.*
 import spock.lang.Shared
 import spock.lang.Specification
 
@@ -23,8 +22,8 @@ class StartGameSpec extends Specification {
 		def dynamoClient = LocalStackDynamoDbClientFactory.create(localstack)
 		def gamesTableName = "games-table"
 		def gamesCountTableName = "games-count-table"
-		TableBuilder.createGamesTable(dynamoClient, gamesTableName)
-		TableBuilder.createGamesCountTable(dynamoClient, gamesCountTableName)
+		TableFactory.createGamesTable(dynamoClient, gamesTableName)
+		TableFactory.createGamesCountTable(dynamoClient, gamesCountTableName)
 		def parametersProvider = new ConstParametersProvider()
 		parametersProvider.setParameter("GAMES_TABLE_NAME", gamesTableName)
 		parametersProvider.setParameter("GAMES_COUNT_TABLE_NAME", gamesCountTableName)
@@ -46,10 +45,7 @@ class StartGameSpec extends Specification {
 			"opponentId": "$opponentId"
 		}
 		""".stripIndent()
-		def request = APIGatewayV2HTTPEvent.builder()
-				.withBody(body)
-				.withHeaders([playerid: hostPlayerId])
-				.build()
+		def request = ApiGatewayEventFactory.create(body, hostPlayerId)
 
 		when:
 		def response = uat.handleRequest(request, null)
