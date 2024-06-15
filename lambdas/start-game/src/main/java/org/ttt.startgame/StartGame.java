@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.ttt.commons.*;
+import org.ttt.commons.exceptions.TooManyActiveGamesException;
 
 @Slf4j
 @SuppressWarnings("unused")
@@ -29,11 +30,19 @@ public class StartGame extends SubjectAwareRequestHandler {
       String subject, APIGatewayV2HTTPEvent event, Context context) {
     CreateGame request = toCreateGame(event.getBody());
     log.info("Creating game for player with ID {}", subject);
-    Game result = gamesService.createNewGame(new CreateGameRequest(subject, request.opponentId()));
-    return APIGatewayV2HTTPResponse.builder()
-        .withStatusCode(200)
-        .withBody(jsonFromGame(result))
-        .build();
+    try {
+      Game result =
+          gamesService.createNewGame(new CreateGameRequest(subject, request.opponentId()));
+      return APIGatewayV2HTTPResponse.builder()
+          .withStatusCode(200)
+          .withBody(jsonFromGame(result))
+          .build();
+    } catch (TooManyActiveGamesException exception) {
+      return APIGatewayV2HTTPResponse.builder()
+          .withStatusCode(409)
+          .withBody(exception.getMessage())
+          .build();
+    }
   }
 
   @SneakyThrows

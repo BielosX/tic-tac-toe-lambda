@@ -5,6 +5,8 @@ import org.ttt.commons.*
 import spock.lang.Shared
 import spock.lang.Specification
 
+import java.util.stream.Stream
+
 class StartGameSpec extends Specification {
 	@Shared
 	def localstack = new DynamoDbLocalStackContainer()
@@ -55,5 +57,32 @@ class StartGameSpec extends Specification {
 	}
 
 	def "should return conflict when player tries to create a new game with max limit reached"() {
+		given:
+		def hostPlayerId = UUID.randomUUID().toString()
+		generateGames(hostPlayerId, 2)
+		def body = """
+		{
+			"opponentId": "${UUID.randomUUID().toString()}"
+		}
+		""".stripIndent()
+		def request = ApiGatewayEventFactory.create(body, hostPlayerId)
+
+		when:
+		def response = uat.handleRequest(request, null)
+
+		then:
+		response.statusCode == 409
+		response.body == "Maximum number of active games reached, finish your games first"
+	}
+
+	def generateGames(String playerId, int count) {
+		def body = """
+		{
+			"opponentId": "${UUID.randomUUID().toString()}"
+		}
+		"""
+		Stream.generate { ApiGatewayEventFactory.create(body, playerId) }
+				.limit(count)
+				.forEach { event -> uat.handleRequest(event, null) }
 	}
 }
