@@ -98,6 +98,8 @@ components:
     PlayerMove:
       type: object
       properties:
+        round:
+          type: number
         positionX:
           type: number
         positionY:

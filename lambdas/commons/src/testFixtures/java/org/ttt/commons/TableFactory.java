@@ -40,4 +40,17 @@ public class TableFactory {
                         .attributeType(ScalarAttributeType.S)
                         .build()));
   }
+
+  public static String getDefaultGamesTableName() {
+    return "games-table";
+  }
+
+  public static String getDefaultGamesCountTableName() {
+    return "games-count-table";
+  }
+
+  public static void createAllTables(DynamoDbClient client) {
+    createGamesTable(client, getDefaultGamesTableName());
+    createGamesCountTable(client, getDefaultGamesCountTableName());
+  }
 }

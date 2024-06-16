@@ -1,11 +1,11 @@
 package org.ttt.startgame
 
 import groovy.json.JsonSlurper
+import java.util.stream.Stream
 import org.ttt.commons.*
+import software.amazon.awssdk.enhanced.dynamodb.TableSchema
 import spock.lang.Shared
 import spock.lang.Specification
-
-import java.util.stream.Stream
 
 class StartGameSpec extends Specification {
 	@Shared
@@ -18,13 +18,10 @@ class StartGameSpec extends Specification {
 	def setupSpec() {
 		localstack.start()
 		def dynamoClient = LocalStackDynamoDbClientFactory.create(localstack)
-		def gamesTableName = "games-table"
-		def gamesCountTableName = "games-count-table"
-		TableFactory.createGamesTable(dynamoClient, gamesTableName)
-		TableFactory.createGamesCountTable(dynamoClient, gamesCountTableName)
+		TableFactory.createAllTables(cleanupSpec())
 		def parametersProvider = new ConstParametersProvider()
-		parametersProvider.setParameter("GAMES_TABLE_NAME", gamesTableName)
-		parametersProvider.setParameter("GAMES_COUNT_TABLE_NAME", gamesCountTableName)
+		parametersProvider.setParameter("GAMES_TABLE_NAME", TableFactory.defaultGamesTableName)
+		parametersProvider.setParameter("GAMES_COUNT_TABLE_NAME", TableFactory.defaultGamesCountTableName)
 		parametersProvider.setParameter("MAX_GAMES_COUNT", "2")
 		def gameService = new GamesService(parametersProvider, dynamoClient)
 		uat = new StartGame(gameService)
@@ -82,7 +79,7 @@ class StartGameSpec extends Specification {
 		}
 		"""
 		Stream.generate { ApiGatewayEventFactory.create(body, playerId) }
-				.limit(count)
-				.forEach { event -> uat.handleRequest(event, null) }
+		.limit(count)
+		.forEach { event -> uat.handleRequest(event, null) }
 	}
 }
