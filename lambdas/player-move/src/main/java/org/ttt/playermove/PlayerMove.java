@@ -50,6 +50,8 @@ public class PlayerMove extends SubjectAwareRequestHandler {
 
   private APIGatewayV2HTTPResponse processMove(
       String subject, PlayerMoveRequest playerMoveRequest) {
-    return null;
+    return APIGatewayV2HTTPResponse.builder()
+            .withStatusCode(204)
+            .build();
   }
 }

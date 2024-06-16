@@ -8,6 +8,8 @@ import spock.lang.Specification
 class PlayerMoveSpec extends Specification {
 	@Shared
 	def localstack = new DynamoDbLocalStackContainer()
+    @Shared
+    GamesService gamesService
 	@Shared
 	PlayerMove uat
 
@@ -19,8 +21,8 @@ class PlayerMoveSpec extends Specification {
 		parametersProvider.setParameter("GAMES_TABLE_NAME", TableFactory.defaultGamesTableName)
 		parametersProvider.setParameter("GAMES_COUNT_TABLE_NAME", TableFactory.defaultGamesCountTableName)
 		parametersProvider.setParameter("MAX_GAMES_COUNT", "2")
-		def gameService = new GamesService(parametersProvider, dynamoClient)
-		uat = new PlayerMove(gameService)
+		gamesService = new GamesService(parametersProvider, dynamoClient)
+		uat = new PlayerMove(gamesService)
 	}
 
 	def cleanupSpec() {
@@ -49,4 +51,27 @@ class PlayerMoveSpec extends Specification {
 		response.statusCode == 404
 		response.body == "Game not found"
 	}
+
+    def "should return 204 no content on success"() {
+        given:
+        def hostPlayerId = UUID.randomUUID().toString()
+        def opponentId = UUID.randomUUID().toString()
+        def gameId = gamesService.createNewGame(new CreateGameRequest(hostPlayerId, opponentId)).gameId
+        def body = """
+        {
+            "round": 1,
+            "positionX": 0,
+            "positionY": 0,
+            "symbol": "CROSS"
+        }
+        """.stripIndent()
+        def event = ApiGatewayEventFactory.create(body, hostPlayerId)
+        event.pathParameters = [gameId: gameId]
+
+        when:
+        def response = uat.handleRequest(event, null)
+
+        then:
+        response.statusCode == 204
+    }
 }
