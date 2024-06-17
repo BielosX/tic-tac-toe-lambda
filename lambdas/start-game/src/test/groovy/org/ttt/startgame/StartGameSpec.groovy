@@ -18,11 +18,12 @@ class StartGameSpec extends Specification {
 	def setupSpec() {
 		localstack.start()
 		def dynamoClient = LocalStackDynamoDbClientFactory.create(localstack)
-		TableFactory.createAllTables(cleanupSpec())
-		def parametersProvider = new ConstParametersProvider()
-		parametersProvider.setParameter("GAMES_TABLE_NAME", TableFactory.defaultGamesTableName)
-		parametersProvider.setParameter("GAMES_COUNT_TABLE_NAME", TableFactory.defaultGamesCountTableName)
-		parametersProvider.setParameter("MAX_GAMES_COUNT", "2")
+		TableFactory.createAllTables(dynamoClient)
+		def parametersProvider = new ConstParametersProvider([
+				"GAMES_TABLE_NAME": TableFactory.defaultGamesTableName,
+				"GAMES_COUNT_TABLE_NAME": TableFactory.defaultGamesCountTableName,
+				"MAX_GAMES_COUNT": "2"
+		])
 		def gameService = new GamesService(parametersProvider, dynamoClient)
 		uat = new StartGame(gameService)
 	}
