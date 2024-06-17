@@ -32,6 +32,7 @@ public class PlayerMove extends SubjectAwareRequestHandler {
     log.debug("Received path params: {}", event.getPathParameters());
     PlayerMoveRequest playerMoveRequest = requestFromString(event.getBody());
     return Optional.ofNullable(event.getPathParameters().get(GAME_ID))
+        .flatMap(gamesService::getGame)
         .map(game -> processMove(subject, playerMoveRequest))
         .orElse(
             APIGatewayV2HTTPResponse.builder()
@@ -50,8 +51,6 @@ public class PlayerMove extends SubjectAwareRequestHandler {
 
   private APIGatewayV2HTTPResponse processMove(
       String subject, PlayerMoveRequest playerMoveRequest) {
-    return APIGatewayV2HTTPResponse.builder()
-            .withStatusCode(204)
-            .build();
+    return APIGatewayV2HTTPResponse.builder().withStatusCode(204).build();
   }
 }
