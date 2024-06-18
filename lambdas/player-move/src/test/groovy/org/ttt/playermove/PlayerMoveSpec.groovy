@@ -75,4 +75,31 @@ class PlayerMoveSpec extends Specification {
         then:
         response.statusCode == 204
     }
+
+	def "should return 400 bad request when provided symbol does not match one chosen for player"() {
+		given:
+		def hostPlayerId = UUID.randomUUID().toString()
+		def opponentId = UUID.randomUUID().toString()
+		def gameId = gamesService.createNewGame(new CreateGameRequest(hostPlayerId, opponentId)).gameId
+		def game = gamesService.getGame(gameId).get()
+		def opponentSymbol = game.symbolMapping[opponentId]
+		def playerSymbol = game.symbolMapping[hostPlayerId]
+		def body = """
+        {
+            "round": 1,
+            "positionX": 0,
+            "positionY": 0,
+            "symbol": "${opponentSymbol}"
+        }
+        """.stripIndent()
+		def event = ApiGatewayEventFactory.create(body, hostPlayerId)
+		event.pathParameters = [gameId: gameId]
+
+		when:
+		def response = uat.handleRequest(event, null)
+
+		then:
+		response.statusCode == 400
+		response.body == "Wrong symbol specified. Your symbol is ${playerSymbol}"
+	}
 }

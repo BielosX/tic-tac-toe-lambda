@@ -92,11 +92,18 @@ components:
   schemas:
     StartGame:
       type: object
+      required:
+        - opponentId
       properties:
         opponentId:
           type: string
     PlayerMove:
       type: object
+      required:
+        - round
+        - positionX
+        - positionY
+        - symbol
       properties:
         round:
           type: number

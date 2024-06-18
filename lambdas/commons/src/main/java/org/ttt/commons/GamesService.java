@@ -2,7 +2,9 @@ package org.ttt.commons;
 
 import static software.amazon.awssdk.enhanced.dynamodb.internal.AttributeValues.numberValue;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Random;
 import java.util.UUID;
 import org.ttt.commons.exceptions.TooManyActiveGamesException;
 import software.amazon.awssdk.enhanced.dynamodb.*;
@@ -20,6 +22,7 @@ public class GamesService {
   private final DynamoDbTable<GameCount> gamesCountTable;
   private final DynamoDbEnhancedClient enhancedClient;
   private final int maxGamesCount;
+  private final Random random = new Random();
 
   public GamesService(ParametersProvider parametersProvider, DynamoDbClient dynamoDbClient) {
     DynamoDbEnhancedClient client =
@@ -46,6 +49,15 @@ public class GamesService {
     return Optional.ofNullable(gamesTable.getItem(Game.builder().gameId(gameId).build()));
   }
 
+  private Map<String, GameSymbol> mapGameSymbols(String playerId, String opponentId) {
+    int playerSymbolIndex = random.nextInt(0, 2);
+    int opponentSymbolIndex = (playerSymbolIndex + 1) % 2;
+    GameSymbol[] values = GameSymbol.values();
+    return Map.of(
+        playerId, values[playerSymbolIndex],
+        opponentId, values[opponentSymbolIndex]);
+  }
+
   public Game createNewGame(CreateGameRequest request) {
     UUID uuid = UUID.randomUUID();
     Game game =
@@ -54,6 +66,7 @@ public class GamesService {
             .gameId(uuid.toString())
             .playerId(request.hostPlayerId())
             .opponentId(request.opponentId())
+            .symbolMapping(mapGameSymbols(request.hostPlayerId(), request.opponentId()))
             .build();
     GameCount gameCount = GameCount.builder().playerId(request.hostPlayerId()).build();
     try {

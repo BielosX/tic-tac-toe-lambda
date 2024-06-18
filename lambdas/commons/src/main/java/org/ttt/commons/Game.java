@@ -1,6 +1,7 @@
 package org.ttt.commons;
 
 import java.time.Instant;
+import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Value;
@@ -43,4 +44,6 @@ public class Game {
         @DynamoDbUpdateBehavior(UpdateBehavior.WRITE_IF_NOT_EXISTS)
       })
   Instant created;
+
+  Map<String, GameSymbol> symbolMapping;
 }

@@ -7,9 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
-import org.ttt.commons.GamesService;
-import org.ttt.commons.ObjectMapperFactory;
-import org.ttt.commons.SubjectAwareRequestHandler;
+import org.ttt.commons.*;
 
 @Slf4j
 @SuppressWarnings("unused")
@@ -33,7 +31,7 @@ public class PlayerMove extends SubjectAwareRequestHandler {
     PlayerMoveRequest playerMoveRequest = requestFromString(event.getBody());
     return Optional.ofNullable(event.getPathParameters().get(GAME_ID))
         .flatMap(gamesService::getGame)
-        .map(game -> processMove(subject, playerMoveRequest))
+        .map(game -> processMove(subject, playerMoveRequest, game))
         .orElse(
             APIGatewayV2HTTPResponse.builder()
                 .withStatusCode(404)
@@ -42,7 +40,7 @@ public class PlayerMove extends SubjectAwareRequestHandler {
   }
 
   public record PlayerMoveRequest(
-      Integer round, Integer positionX, Integer positionY, String symbol) {}
+      Integer round, Integer positionX, Integer positionY, GameSymbol symbol) {}
 
   @SneakyThrows
   private PlayerMoveRequest requestFromString(String requestBody) {
@@ -50,7 +48,14 @@ public class PlayerMove extends SubjectAwareRequestHandler {
   }
 
   private APIGatewayV2HTTPResponse processMove(
-      String subject, PlayerMoveRequest playerMoveRequest) {
+      String subject, PlayerMoveRequest playerMoveRequest, Game game) {
+    GameSymbol expectedSymbol = game.getSymbolMapping().get(subject);
+    if (playerMoveRequest.symbol() != expectedSymbol) {
+      return APIGatewayV2HTTPResponse.builder()
+          .withStatusCode(400)
+          .withBody(String.format("Wrong symbol specified. Your symbol is %s", expectedSymbol))
+          .build();
+    }
     return APIGatewayV2HTTPResponse.builder().withStatusCode(204).build();
   }
 }
