@@ -8,8 +8,8 @@ import spock.lang.Specification
 class PlayerMoveSpec extends Specification {
 	@Shared
 	def localstack = new DynamoDbLocalStackContainer()
-    @Shared
-    GamesService gamesService
+	@Shared
+	GamesService gamesService
 	@Shared
 	PlayerMove uat
 
@@ -18,9 +18,9 @@ class PlayerMoveSpec extends Specification {
 		def dynamoClient = LocalStackDynamoDbClientFactory.create(localstack)
 		TableFactory.createAllTables(dynamoClient)
 		def parametersProvider = new ConstParametersProvider([
-				"GAMES_TABLE_NAME": TableFactory.defaultGamesTableName,
-				"GAMES_COUNT_TABLE_NAME": TableFactory.defaultGamesCountTableName,
-				"MAX_GAMES_COUNT": "2"
+			"GAMES_TABLE_NAME": TableFactory.defaultGamesTableName,
+			"GAMES_COUNT_TABLE_NAME": TableFactory.defaultGamesCountTableName,
+			"MAX_GAMES_COUNT": "2"
 		])
 		gamesService = new GamesService(parametersProvider, dynamoClient)
 		uat = new PlayerMove(gamesService)
@@ -53,12 +53,12 @@ class PlayerMoveSpec extends Specification {
 		response.body == "Game not found"
 	}
 
-    def "should return 204 no content on success"() {
-        given:
-        def hostPlayerId = UUID.randomUUID().toString()
-        def opponentId = UUID.randomUUID().toString()
-        def gameId = gamesService.createNewGame(new CreateGameRequest(hostPlayerId, opponentId)).gameId
-        def body = """
+	def "should return 204 no content on success"() {
+		given:
+		def hostPlayerId = UUID.randomUUID().toString()
+		def opponentId = UUID.randomUUID().toString()
+		def gameId = gamesService.createNewGame(new CreateGameRequest(hostPlayerId, opponentId)).gameId
+		def body = """
         {
             "round": 1,
             "positionX": 0,
@@ -66,15 +66,15 @@ class PlayerMoveSpec extends Specification {
             "symbol": "CROSS"
         }
         """.stripIndent()
-        def event = ApiGatewayEventFactory.create(body, hostPlayerId)
-        event.pathParameters = [gameId: gameId]
+		def event = ApiGatewayEventFactory.create(body, hostPlayerId)
+		event.pathParameters = [gameId: gameId]
 
-        when:
-        def response = uat.handleRequest(event, null)
+		when:
+		def response = uat.handleRequest(event, null)
 
-        then:
-        response.statusCode == 204
-    }
+		then:
+		response.statusCode == 204
+	}
 
 	def "should return 400 bad request when provided symbol does not match one chosen for player"() {
 		given:

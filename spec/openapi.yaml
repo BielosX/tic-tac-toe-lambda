@@ -29,6 +29,37 @@ paths:
           schema:
             type: string
   /games:
+    get:
+      operationId: listGames
+      description: "Get games for player"
+      parameters:
+        - name: asOpponent
+          description: "Query all games by opponentId"
+          in: query
+          schema:
+            type: boolean
+            default: false
+        - name: nextPageToken
+          description: "Last evaluated key for pagination"
+          in: query
+          schema:
+            type: string
+        - name: limit
+          description: "Page size limit"
+          in: query
+          schema:
+            type: number
+      x-amazon-apigateway-integration:
+        type: aws_proxy
+        httpMethod: POST
+        uri: "${list_games_arn}"
+        payloadFormatVersion: "2.0"
+        passthroughBehavior: when_no_templates
+      responses:
+        200:
+          description: "List of games returned"
+      security:
+        - authorizer: []
     post:
       security:
         - authorizer: []

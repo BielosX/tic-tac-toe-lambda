@@ -13,6 +13,8 @@ class StartGameSpec extends Specification {
 	@Shared
 	def parser = new JsonSlurper()
 	@Shared
+	GameGenerator generator
+	@Shared
 	StartGame uat
 
 	def setupSpec() {
@@ -20,11 +22,12 @@ class StartGameSpec extends Specification {
 		def dynamoClient = LocalStackDynamoDbClientFactory.create(localstack)
 		TableFactory.createAllTables(dynamoClient)
 		def parametersProvider = new ConstParametersProvider([
-				"GAMES_TABLE_NAME": TableFactory.defaultGamesTableName,
-				"GAMES_COUNT_TABLE_NAME": TableFactory.defaultGamesCountTableName,
-				"MAX_GAMES_COUNT": "2"
+			"GAMES_TABLE_NAME": TableFactory.defaultGamesTableName,
+			"GAMES_COUNT_TABLE_NAME": TableFactory.defaultGamesCountTableName,
+			"MAX_GAMES_COUNT": "2"
 		])
 		def gameService = new GamesService(parametersProvider, dynamoClient)
+		generator = new GameGenerator(gameService)
 		uat = new StartGame(gameService)
 	}
 
@@ -57,7 +60,7 @@ class StartGameSpec extends Specification {
 	def "should return conflict when player tries to create a new game with max limit reached"() {
 		given:
 		def hostPlayerId = UUID.randomUUID().toString()
-		generateGames(hostPlayerId, 2)
+		generator.generateGames(hostPlayerId, 2)
 		def body = """
 		{
 			"opponentId": "${UUID.randomUUID().toString()}"
@@ -71,16 +74,5 @@ class StartGameSpec extends Specification {
 		then:
 		response.statusCode == 409
 		response.body == "Maximum number of active games reached, finish your games first"
-	}
-
-	def generateGames(String playerId, int count) {
-		def body = """
-		{
-			"opponentId": "${UUID.randomUUID().toString()}"
-		}
-		"""
-		Stream.generate { ApiGatewayEventFactory.create(body, playerId) }
-		.limit(count)
-		.forEach { event -> uat.handleRequest(event, null) }
 	}
 }

@@ -3,6 +3,7 @@ locals {
     "player-move" : "org.ttt.playermove.PlayerMove::handleRequest",
     "start-game" : "org.ttt.startgame.StartGame::handleRequest",
     "describe-game" : "org.ttt.describegame.DescribeGame::handleRequest"
+    "list-games" : "org.ttt.listgames.ListGames::handleRequest"
   }
 }
 
