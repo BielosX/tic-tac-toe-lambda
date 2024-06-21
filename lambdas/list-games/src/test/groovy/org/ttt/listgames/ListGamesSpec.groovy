@@ -64,4 +64,32 @@ class ListGamesSpec extends Specification {
 		firstResponseBody.games.size() == 5
 		secondResponseBody.games.size() == 4
 	}
+
+	def "should return empty list when no games available"() {
+		given:
+		def playerId = UUID.randomUUID().toString()
+
+		when:
+		def response = uat.handleRequest(ApiGatewayEventFactory.create("", playerId), null)
+
+		then:
+		def parsedResponse = parser.parseText(response.body)
+		parsedResponse.games.size() == 0
+	}
+
+	def "should not include nextPageToken when there is no next page"() {
+		given:
+		def playerId = UUID.randomUUID().toString()
+		generator.generateGames(playerId, 2)
+		def queryParams = [
+				"limit": "5"
+		]
+
+		when:
+		def response = uat.handleRequest(ApiGatewayEventFactory.create("", queryParams, playerId), null)
+		def parsedResponse = parser.parseText(response.body)
+
+		then:
+		parsedResponse.nextPageToken == null
+	}
 }
