@@ -152,4 +152,27 @@ class PlayerMoveSpec extends Specification {
 		response.statusCode == 409
 		response.body == "Round number 1 not expected"
 	}
+
+	def "should return 409 conflict when other player is on move"() {
+		given:
+		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
+		gamesService.commitMove(gameId, playerId, new CommitMoveRequest(1, 0, 0, CROSS))
+		def body = """
+        {
+            "round": 2,
+            "positionX": 1,
+            "positionY": 1,
+            "symbol": "CROSS"
+        }
+		""".stripIndent()
+		def event = ApiGatewayEventFactory.create(body, playerId)
+		event.pathParameters = [gameId: gameId]
+
+		when:
+		def response = uat.handleRequest(event, null)
+
+		then:
+		response.statusCode == 409
+		response.body == "Not your turn"
+	}
 }

@@ -84,7 +84,8 @@ public class GamesService {
       throws GameNotFoundException,
           GameAlreadyFinishedException,
           WrongSymbolException,
-          GameRoundDoesNotMatch {
+          GameRoundDoesNotMatch,
+          NotYourTurnException {
     Game game =
         getGame(gameId)
             .orElseThrow(
@@ -104,9 +105,14 @@ public class GamesService {
       throw new GameRoundDoesNotMatch(
           String.format("Round number %d not expected", request.round()));
     }
+    if (!playerId.equals(game.getCurrentPlayerId())) {
+      throw new NotYourTurnException("Not your turn");
+    }
     List<GameMove> moves = new ArrayList<>(game.getMoves());
     moves.add(new GameMove(request.positionX(), request.positionY(), request.symbol()));
-    Game updatedGame = game.withMoves(moves);
+    String nextPlayerId =
+        game.getPlayerId().equals(playerId) ? game.getOpponentId() : game.getPlayerId();
+    Game updatedGame = game.withMoves(moves).withCurrentPlayerId(nextPlayerId);
     try {
       gamesTable.updateItem(
           b ->
@@ -149,15 +155,19 @@ public class GamesService {
 
   public Game createNewGame(CreateGameRequest request) throws TooManyActiveGamesException {
     UUID uuid = UUID.randomUUID();
+    String hostId = request.hostPlayerId();
+    String opponentId = request.opponentId();
+    Map<String, GameSymbol> playerToSymbol = gameSymbolMapper.mapGameSymbols(hostId, opponentId);
+    String currentPlayerId = playerToSymbol.get(hostId) == GameSymbol.CROSS ? hostId : opponentId;
     Game game =
         Game.builder()
             .state(GameState.ACTIVE)
             .gameId(uuid.toString())
-            .playerId(request.hostPlayerId())
-            .opponentId(request.opponentId())
+            .playerId(hostId)
+            .opponentId(opponentId)
             .moves(List.of())
-            .symbolMapping(
-                gameSymbolMapper.mapGameSymbols(request.hostPlayerId(), request.opponentId()))
+            .currentPlayerId(currentPlayerId)
+            .symbolMapping(playerToSymbol)
             .build();
     GameCount gameCount = GameCount.builder().playerId(request.hostPlayerId()).build();
     try {

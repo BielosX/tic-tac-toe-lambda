@@ -52,4 +52,10 @@ public class Game {
 
   @With(onMethod_ = @DynamoDbIgnore)
   List<GameMove> moves;
+
+  @With(onMethod_ = @DynamoDbIgnore)
+  String winnerId;
+
+  @With(onMethod_ = @DynamoDbIgnore)
+  String currentPlayerId;
 }

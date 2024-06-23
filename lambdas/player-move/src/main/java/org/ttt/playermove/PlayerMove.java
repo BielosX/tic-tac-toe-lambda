@@ -8,10 +8,7 @@ import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.ttt.commons.*;
-import org.ttt.commons.exceptions.GameAlreadyFinishedException;
-import org.ttt.commons.exceptions.GameNotFoundException;
-import org.ttt.commons.exceptions.GameRoundDoesNotMatch;
-import org.ttt.commons.exceptions.WrongSymbolException;
+import org.ttt.commons.exceptions.*;
 
 @Slf4j
 @SuppressWarnings("unused")
@@ -38,7 +35,7 @@ public class PlayerMove extends SubjectAwareRequestHandler {
       gamesService.commitMove(gameId, subject, playerMoveRequest);
     } catch (WrongSymbolException e) {
       return fromException(e, 400);
-    } catch (GameAlreadyFinishedException | GameRoundDoesNotMatch e) {
+    } catch (GameAlreadyFinishedException | NotYourTurnException | GameRoundDoesNotMatch e) {
       return fromException(e, 409);
     } catch (GameNotFoundException e) {
       return fromException(e, 404);
