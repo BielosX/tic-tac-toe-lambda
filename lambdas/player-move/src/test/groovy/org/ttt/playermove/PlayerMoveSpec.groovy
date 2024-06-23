@@ -1,6 +1,8 @@
 package org.ttt.playermove
 
-import groovy.json.JsonSlurper
+
+import static org.ttt.commons.GameSymbol.CROSS
+
 import org.ttt.commons.*
 import spock.lang.Shared
 import spock.lang.Specification
@@ -9,13 +11,11 @@ class PlayerMoveSpec extends Specification {
 	@Shared
 	def localstack = new DynamoDbLocalStackContainer()
 	@Shared
-	def parser = new JsonSlurper()
-	@Shared
 	GamesService gamesService
 	@Shared
 	PlayerMove uat
-	String playerId;
-	String opponentId;
+	String playerId
+	String opponentId
 
 	def setup() {
 		playerId = UUID.randomUUID().toString()
@@ -31,7 +31,7 @@ class PlayerMoveSpec extends Specification {
 			"GAMES_COUNT_TABLE_NAME": TableFactory.defaultGamesCountTableName,
 			"MAX_GAMES_COUNT": "2"
 		])
-		gamesService = new GamesService(parametersProvider, dynamoClient)
+		gamesService = new GamesService(parametersProvider, dynamoClient, new ConstGameSymbolMapper())
 		uat = new PlayerMove(gamesService)
 	}
 
@@ -65,13 +65,12 @@ class PlayerMoveSpec extends Specification {
 		given:
 		def game = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId))
 		def gameId = game.gameId
-		def symbol = game.symbolMapping[playerId]
 		def body = """
         {
             "round": 1,
             "positionX": 0,
             "positionY": 0,
-            "symbol": "${symbol}"
+            "symbol": "CROSS"
         }
         """.stripIndent()
 		def event = ApiGatewayEventFactory.create(body, playerId)
@@ -87,15 +86,12 @@ class PlayerMoveSpec extends Specification {
 	def "should return 400 bad request when provided symbol does not match one chosen for player"() {
 		given:
 		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
-		def game = gamesService.getGame(gameId).get()
-		def opponentSymbol = game.symbolMapping[opponentId]
-		def playerSymbol = game.symbolMapping[playerId]
 		def body = """
         {
             "round": 1,
             "positionX": 0,
             "positionY": 0,
-            "symbol": "${opponentSymbol}"
+            "symbol": "NOUGHT"
         }
         """.stripIndent()
 		def event = ApiGatewayEventFactory.create(body, playerId)
@@ -106,20 +102,18 @@ class PlayerMoveSpec extends Specification {
 
 		then:
 		response.statusCode == 400
-		response.body == "Symbol ${playerSymbol} expected, received ${opponentSymbol} instead"
+		response.body == "Symbol CROSS expected, received NOUGHT instead"
 	}
 
 	def "should save proper move"() {
 		given:
 		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
-		def game = gamesService.getGame(gameId).get()
-		def playerSymbol = game.symbolMapping[playerId]
 		def body = """
         {
             "round": 1,
             "positionX": 0,
             "positionY": 0,
-            "symbol": "${playerSymbol}"
+            "symbol": "CROSS"
         }
         """.stripIndent()
 		def event = ApiGatewayEventFactory.create(body, playerId)
@@ -134,5 +128,28 @@ class PlayerMoveSpec extends Specification {
 		updatedGame.moves.get(0).y == 0
 		updatedGame.round == 2
 		updatedGame.moves.get(0).symbol == playerSymbol
+	}
+
+	def "should return 409 conflict when different round number expected"() {
+		given:
+		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
+		gamesService.commitMove(gameId, playerId, new CommitMoveRequest(1, 0, 0, CROSS))
+		def body = """
+        {
+            "round": 1,
+            "positionX": 0,
+            "positionY": 0,
+            "symbol": "NOUGHT"
+        }
+        """.stripIndent()
+		def event = ApiGatewayEventFactory.create(body, opponentId)
+		event.pathParameters = [gameId: gameId]
+
+		when:
+		def response = uat.handleRequest(event, null)
+
+		then:
+		response.statusCode == 409
+		response.body == "Round number 1 not expected"
 	}
 }

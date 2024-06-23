@@ -29,10 +29,13 @@ public class GamesService {
   private final DynamoDbIndex<Game> gamesTableByOpponentId;
   private final DynamoDbEnhancedClient enhancedClient;
   private final int maxGamesCount;
-  private final Random random = new Random();
+  private final GameSymbolMapper gameSymbolMapper;
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
 
-  public GamesService(ParametersProvider parametersProvider, DynamoDbClient dynamoDbClient) {
+  public GamesService(
+      ParametersProvider parametersProvider,
+      DynamoDbClient dynamoDbClient,
+      GameSymbolMapper gameSymbolMapper) {
     DynamoDbEnhancedClient client =
         DynamoDbEnhancedClient.builder()
             .dynamoDbClient(dynamoDbClient)
@@ -47,12 +50,13 @@ public class GamesService {
     maxGamesCount = Integer.parseInt(parametersProvider.getParameter("MAX_GAMES_COUNT"));
     this.gamesTableByPlayerId = this.gamesTable.index("PlayerIdIndex");
     this.gamesTableByOpponentId = this.gamesTable.index("OpponentIdIndex");
+    this.gameSymbolMapper = gameSymbolMapper;
     this.gamesCountTable =
         client.table(gamesCountTableName, TableSchema.fromClass(GameCount.class));
   }
 
   public GamesService() {
-    this(new EnvVarParametersProvider(), DynamoDbClient.create());
+    this(new EnvVarParametersProvider(), DynamoDbClient.create(), new RandomGameSymbolMapper());
   }
 
   public Optional<Game> getGame(String gameId) {
@@ -80,7 +84,7 @@ public class GamesService {
       throws GameNotFoundException,
           GameAlreadyFinishedException,
           WrongSymbolException,
-          GameRoundAlreadySaved {
+          GameRoundDoesNotMatch {
     Game game =
         getGame(gameId)
             .orElseThrow(
@@ -96,19 +100,25 @@ public class GamesService {
           String.format(
               "Symbol %s expected, received %s instead", expectedSymbol, request.symbol()));
     }
-    game.getMoves().add(new GameMove(request.positionX(), request.positionY(), request.symbol()));
+    if (!request.round().equals(game.getRound().intValue())) {
+      throw new GameRoundDoesNotMatch(
+          String.format("Round number %d not expected", request.round()));
+    }
+    List<GameMove> moves = new ArrayList<>(game.getMoves());
+    moves.add(new GameMove(request.positionX(), request.positionY(), request.symbol()));
+    Game updatedGame = game.withMoves(moves);
     try {
       gamesTable.updateItem(
           b ->
-              b.item(game)
+              b.item(updatedGame)
                   .conditionExpression(
                       Expression.builder()
                           .expression("round = :expected")
-                          .putExpressionValue(":expected", numberValue(game.getRound()))
+                          .putExpressionValue(":expected", numberValue(updatedGame.getRound()))
                           .build()));
     } catch (ConditionalCheckFailedException e) {
-      throw new GameRoundAlreadySaved(
-          String.format("Round number %d already saved", game.getRound()));
+      throw new GameRoundDoesNotMatch(
+          String.format("Round number %d not expected", game.getRound()));
     }
   }
 
@@ -137,15 +147,6 @@ public class GamesService {
     return new GamesListPage(page.items(), newNextPageToken);
   }
 
-  private Map<String, GameSymbol> mapGameSymbols(String playerId, String opponentId) {
-    int playerSymbolIndex = random.nextInt(0, 2);
-    int opponentSymbolIndex = (playerSymbolIndex + 1) % 2;
-    GameSymbol[] values = GameSymbol.values();
-    return Map.of(
-        playerId, values[playerSymbolIndex],
-        opponentId, values[opponentSymbolIndex]);
-  }
-
   public Game createNewGame(CreateGameRequest request) throws TooManyActiveGamesException {
     UUID uuid = UUID.randomUUID();
     Game game =
@@ -155,7 +156,8 @@ public class GamesService {
             .playerId(request.hostPlayerId())
             .opponentId(request.opponentId())
             .moves(List.of())
-            .symbolMapping(mapGameSymbols(request.hostPlayerId(), request.opponentId()))
+            .symbolMapping(
+                gameSymbolMapper.mapGameSymbols(request.hostPlayerId(), request.opponentId()))
             .build();
     GameCount gameCount = GameCount.builder().playerId(request.hostPlayerId()).build();
     try {
