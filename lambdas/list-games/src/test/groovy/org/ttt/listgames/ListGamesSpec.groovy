@@ -82,7 +82,7 @@ class ListGamesSpec extends Specification {
 		def playerId = UUID.randomUUID().toString()
 		generator.generateGames(playerId, 2)
 		def queryParams = [
-				"limit": "5"
+			"limit": "5"
 		]
 
 		when:
