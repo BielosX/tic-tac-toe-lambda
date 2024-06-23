@@ -36,20 +36,11 @@ public class PlayerMove extends SubjectAwareRequestHandler {
     try {
       gamesService.commitMove(gameId, subject, playerMoveRequest);
     } catch (WrongSymbolException e) {
-      return APIGatewayV2HTTPResponse.builder()
-          .withStatusCode(400)
-          .withBody(e.getMessage())
-          .build();
+      return fromException(e, 400);
     } catch (GameAlreadyFinishedException e) {
-      return APIGatewayV2HTTPResponse.builder()
-          .withStatusCode(409)
-          .withBody(e.getMessage())
-          .build();
+      return fromException(e, 409);
     } catch (GameNotFoundException e) {
-      return APIGatewayV2HTTPResponse.builder()
-          .withStatusCode(404)
-          .withBody(e.getMessage())
-          .build();
+      return fromException(e, 404);
     }
     return APIGatewayV2HTTPResponse.builder().withStatusCode(204).build();
   }
@@ -57,5 +48,12 @@ public class PlayerMove extends SubjectAwareRequestHandler {
   @SneakyThrows
   private CommitMoveRequest requestFromString(String requestBody) {
     return objectMapper.readValue(requestBody, CommitMoveRequest.class);
+  }
+
+  private APIGatewayV2HTTPResponse fromException(Exception exception, int statusCode) {
+    return APIGatewayV2HTTPResponse.builder()
+        .withStatusCode(statusCode)
+        .withBody(exception.getMessage())
+        .build();
   }
 }
