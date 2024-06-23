@@ -175,4 +175,27 @@ class PlayerMoveSpec extends Specification {
 		response.statusCode == 409
 		response.body == "Not your turn"
 	}
+
+	def "should return 409 conflict when position is already occupied"() {
+		given:
+		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
+		gamesService.commitMove(gameId, playerId, new CommitMoveRequest(1, 0, 0, CROSS))
+		def body = """
+        {
+            "round": 2,
+            "positionX": 0,
+            "positionY": 0,
+            "symbol": "NOUGHT"
+        }
+		""".stripIndent()
+		def event = ApiGatewayEventFactory.create(body, opponentId)
+		event.pathParameters = [gameId: gameId]
+
+		when:
+		def response = uat.handleRequest(event, null)
+
+		then:
+		response.statusCode == 409
+		response.body == "Position (0,0) already occupied"
+	}
 }

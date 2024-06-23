@@ -85,7 +85,8 @@ public class GamesService {
           GameAlreadyFinishedException,
           WrongSymbolException,
           GameRoundDoesNotMatch,
-          NotYourTurnException {
+          NotYourTurnException,
+          PositionAlreadyOccupiedException {
     Game game =
         getGame(gameId)
             .orElseThrow(
@@ -107,6 +108,17 @@ public class GamesService {
     }
     if (!playerId.equals(game.getCurrentPlayerId())) {
       throw new NotYourTurnException("Not your turn");
+    }
+    boolean isPositionOccupied =
+        game.getMoves().stream()
+            .anyMatch(
+                move ->
+                    move.getX().equals(request.positionX())
+                        && move.getY().equals(request.positionY()));
+    if (isPositionOccupied) {
+      throw new PositionAlreadyOccupiedException(
+          String.format(
+              "Position (%d,%d) already occupied", request.positionX(), request.positionY()));
     }
     List<GameMove> moves = new ArrayList<>(game.getMoves());
     moves.add(new GameMove(request.positionX(), request.positionY(), request.symbol()));

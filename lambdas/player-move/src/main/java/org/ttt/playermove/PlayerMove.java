@@ -35,7 +35,10 @@ public class PlayerMove extends SubjectAwareRequestHandler {
       gamesService.commitMove(gameId, subject, playerMoveRequest);
     } catch (WrongSymbolException e) {
       return fromException(e, 400);
-    } catch (GameAlreadyFinishedException | NotYourTurnException | GameRoundDoesNotMatch e) {
+    } catch (GameAlreadyFinishedException
+        | PositionAlreadyOccupiedException
+        | NotYourTurnException
+        | GameRoundDoesNotMatch e) {
       return fromException(e, 409);
     } catch (GameNotFoundException e) {
       return fromException(e, 404);
