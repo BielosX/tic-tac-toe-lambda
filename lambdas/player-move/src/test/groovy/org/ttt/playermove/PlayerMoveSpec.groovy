@@ -1,6 +1,6 @@
 package org.ttt.playermove
 
-
+import groovy.json.JsonSlurper
 import org.ttt.commons.*
 import spock.lang.Shared
 import spock.lang.Specification
@@ -9,9 +9,18 @@ class PlayerMoveSpec extends Specification {
 	@Shared
 	def localstack = new DynamoDbLocalStackContainer()
 	@Shared
+	def parser = new JsonSlurper()
+	@Shared
 	GamesService gamesService
 	@Shared
 	PlayerMove uat
+	String playerId;
+	String opponentId;
+
+	def setup() {
+		playerId = UUID.randomUUID().toString()
+		opponentId = UUID.randomUUID().toString()
+	}
 
 	def setupSpec() {
 		localstack.start()
@@ -33,7 +42,6 @@ class PlayerMoveSpec extends Specification {
 	def "should return 404 not found when there is no game with provided ID"() {
 		given:
 		def gameId = UUID.randomUUID().toString()
-		def playerId = UUID.randomUUID().toString()
 		def body = """
         {
             "round": 1,
@@ -55,11 +63,9 @@ class PlayerMoveSpec extends Specification {
 
 	def "should return 204 no content on success"() {
 		given:
-		def hostPlayerId = UUID.randomUUID().toString()
-		def opponentId = UUID.randomUUID().toString()
-		def game = gamesService.createNewGame(new CreateGameRequest(hostPlayerId, opponentId))
+		def game = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId))
 		def gameId = game.gameId
-		def symbol = game.symbolMapping[hostPlayerId]
+		def symbol = game.symbolMapping[playerId]
 		def body = """
         {
             "round": 1,
@@ -68,7 +74,7 @@ class PlayerMoveSpec extends Specification {
             "symbol": "${symbol}"
         }
         """.stripIndent()
-		def event = ApiGatewayEventFactory.create(body, hostPlayerId)
+		def event = ApiGatewayEventFactory.create(body, playerId)
 		event.pathParameters = [gameId: gameId]
 
 		when:
@@ -80,12 +86,10 @@ class PlayerMoveSpec extends Specification {
 
 	def "should return 400 bad request when provided symbol does not match one chosen for player"() {
 		given:
-		def hostPlayerId = UUID.randomUUID().toString()
-		def opponentId = UUID.randomUUID().toString()
-		def gameId = gamesService.createNewGame(new CreateGameRequest(hostPlayerId, opponentId)).gameId
+		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
 		def game = gamesService.getGame(gameId).get()
 		def opponentSymbol = game.symbolMapping[opponentId]
-		def playerSymbol = game.symbolMapping[hostPlayerId]
+		def playerSymbol = game.symbolMapping[playerId]
 		def body = """
         {
             "round": 1,
@@ -94,7 +98,7 @@ class PlayerMoveSpec extends Specification {
             "symbol": "${opponentSymbol}"
         }
         """.stripIndent()
-		def event = ApiGatewayEventFactory.create(body, hostPlayerId)
+		def event = ApiGatewayEventFactory.create(body, playerId)
 		event.pathParameters = [gameId: gameId]
 
 		when:
@@ -103,5 +107,32 @@ class PlayerMoveSpec extends Specification {
 		then:
 		response.statusCode == 400
 		response.body == "Symbol ${playerSymbol} expected, received ${opponentSymbol} instead"
+	}
+
+	def "should save proper move"() {
+		given:
+		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
+		def game = gamesService.getGame(gameId).get()
+		def playerSymbol = game.symbolMapping[playerId]
+		def body = """
+        {
+            "round": 1,
+            "positionX": 0,
+            "positionY": 0,
+            "symbol": "${playerSymbol}"
+        }
+        """.stripIndent()
+		def event = ApiGatewayEventFactory.create(body, playerId)
+		event.pathParameters = [gameId: gameId]
+
+		when:
+		uat.handleRequest(event, null)
+		def updatedGame = gamesService.getGame(gameId).get()
+
+		then:
+		updatedGame.moves.get(0).x == 0
+		updatedGame.moves.get(0).y == 0
+		updatedGame.round == 2
+		updatedGame.moves.get(0).symbol == playerSymbol
 	}
 }

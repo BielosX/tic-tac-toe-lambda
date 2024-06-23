@@ -1,6 +1,7 @@
 package org.ttt.commons;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import lombok.Builder;
 import lombok.Getter;
@@ -46,4 +47,5 @@ public class Game {
   Instant created;
 
   Map<String, GameSymbol> symbolMapping;
+  List<GameMove> moves;
 }

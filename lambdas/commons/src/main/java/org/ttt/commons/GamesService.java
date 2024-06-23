@@ -95,6 +95,8 @@ public class GamesService {
           String.format(
               "Symbol %s expected, received %s instead", expectedSymbol, request.symbol()));
     }
+    game.getMoves().add(new GameMove(request.positionX(), request.positionY(), request.symbol()));
+    gamesTable.updateItem(game);
   }
 
   public GamesListPage listGames(
@@ -139,6 +141,7 @@ public class GamesService {
             .gameId(uuid.toString())
             .playerId(request.hostPlayerId())
             .opponentId(request.opponentId())
+            .moves(List.of())
             .symbolMapping(mapGameSymbols(request.hostPlayerId(), request.opponentId()))
             .build();
     GameCount gameCount = GameCount.builder().playerId(request.hostPlayerId()).build();
