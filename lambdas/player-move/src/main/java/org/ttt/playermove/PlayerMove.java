@@ -8,6 +8,9 @@ import java.util.Optional;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.ttt.commons.*;
+import org.ttt.commons.exceptions.GameAlreadyFinishedException;
+import org.ttt.commons.exceptions.GameNotFoundException;
+import org.ttt.commons.exceptions.WrongSymbolException;
 
 @Slf4j
 @SuppressWarnings("unused")
@@ -28,34 +31,31 @@ public class PlayerMove extends SubjectAwareRequestHandler {
   protected APIGatewayV2HTTPResponse handleRequestWithSubject(
       String subject, APIGatewayV2HTTPEvent event, Context context) {
     log.debug("Received path params: {}", event.getPathParameters());
-    PlayerMoveRequest playerMoveRequest = requestFromString(event.getBody());
-    return Optional.ofNullable(event.getPathParameters().get(GAME_ID))
-        .flatMap(gamesService::getGame)
-        .map(game -> processMove(subject, playerMoveRequest, game))
-        .orElse(
-            APIGatewayV2HTTPResponse.builder()
-                .withStatusCode(404)
-                .withBody("Game not found")
-                .build());
-  }
-
-  public record PlayerMoveRequest(
-      Integer round, Integer positionX, Integer positionY, GameSymbol symbol) {}
-
-  @SneakyThrows
-  private PlayerMoveRequest requestFromString(String requestBody) {
-    return objectMapper.readValue(requestBody, PlayerMoveRequest.class);
-  }
-
-  private APIGatewayV2HTTPResponse processMove(
-      String subject, PlayerMoveRequest playerMoveRequest, Game game) {
-    GameSymbol expectedSymbol = game.getSymbolMapping().get(subject);
-    if (playerMoveRequest.symbol() != expectedSymbol) {
+    CommitMoveRequest playerMoveRequest = requestFromString(event.getBody());
+    String gameId = Optional.ofNullable(event.getPathParameters().get(GAME_ID)).orElseThrow();
+    try {
+      gamesService.commitMove(gameId, subject, playerMoveRequest);
+    } catch (WrongSymbolException e) {
       return APIGatewayV2HTTPResponse.builder()
           .withStatusCode(400)
-          .withBody(String.format("Wrong symbol specified. Your symbol is %s", expectedSymbol))
+          .withBody(e.getMessage())
+          .build();
+    } catch (GameAlreadyFinishedException e) {
+      return APIGatewayV2HTTPResponse.builder()
+          .withStatusCode(409)
+          .withBody(e.getMessage())
+          .build();
+    } catch (GameNotFoundException e) {
+      return APIGatewayV2HTTPResponse.builder()
+          .withStatusCode(404)
+          .withBody(e.getMessage())
           .build();
     }
     return APIGatewayV2HTTPResponse.builder().withStatusCode(204).build();
+  }
+
+  @SneakyThrows
+  private CommitMoveRequest requestFromString(String requestBody) {
+    return objectMapper.readValue(requestBody, CommitMoveRequest.class);
   }
 }

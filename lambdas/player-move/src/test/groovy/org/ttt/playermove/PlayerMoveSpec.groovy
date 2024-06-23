@@ -50,20 +50,22 @@ class PlayerMoveSpec extends Specification {
 
 		then:
 		response.statusCode == 404
-		response.body == "Game not found"
+		response.body == "Game with ID ${gameId} not found"
 	}
 
 	def "should return 204 no content on success"() {
 		given:
 		def hostPlayerId = UUID.randomUUID().toString()
 		def opponentId = UUID.randomUUID().toString()
-		def gameId = gamesService.createNewGame(new CreateGameRequest(hostPlayerId, opponentId)).gameId
+		def game = gamesService.createNewGame(new CreateGameRequest(hostPlayerId, opponentId))
+		def gameId = game.gameId
+		def symbol = game.symbolMapping[hostPlayerId]
 		def body = """
         {
             "round": 1,
             "positionX": 0,
             "positionY": 0,
-            "symbol": "CROSS"
+            "symbol": "${symbol}"
         }
         """.stripIndent()
 		def event = ApiGatewayEventFactory.create(body, hostPlayerId)
@@ -100,6 +102,6 @@ class PlayerMoveSpec extends Specification {
 
 		then:
 		response.statusCode == 400
-		response.body == "Wrong symbol specified. Your symbol is ${playerSymbol}"
+		response.body == "Symbol ${playerSymbol} expected, received ${opponentSymbol} instead"
 	}
 }
