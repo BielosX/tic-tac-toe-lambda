@@ -33,7 +33,7 @@ public class PlayerMove extends SubjectAwareRequestHandler {
     String gameId = Optional.ofNullable(event.getPathParameters().get(GAME_ID)).orElseThrow();
     try {
       gamesService.commitMove(gameId, subject, playerMoveRequest);
-    } catch (WrongSymbolException e) {
+    } catch (WrongSymbolException | BadRequestException e) {
       return fromException(e, 400);
     } catch (GameAlreadyFinishedException
         | PositionAlreadyOccupiedException

@@ -127,7 +127,7 @@ class PlayerMoveSpec extends Specification {
 		updatedGame.moves.get(0).x == 0
 		updatedGame.moves.get(0).y == 0
 		updatedGame.round == 2
-		updatedGame.moves.get(0).symbol == playerSymbol
+		updatedGame.moves.get(0).symbol == CROSS
 	}
 
 	def "should return 409 conflict when different round number expected"() {
@@ -197,5 +197,27 @@ class PlayerMoveSpec extends Specification {
 		then:
 		response.statusCode == 409
 		response.body == "Position (0,0) already occupied"
+	}
+
+	def "should return 400 bad request when position is out of the game area"() {
+		given:
+		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
+		def body = """
+        {
+            "round": 1,
+            "positionX": 3,
+            "positionY": 3,
+            "symbol": "CROSS"
+        }
+		""".stripIndent()
+		def event = ApiGatewayEventFactory.create(body, playerId)
+		event.pathParameters = [gameId: gameId]
+
+		when:
+		def response = uat.handleRequest(event, null)
+
+		then:
+		response.statusCode == 400
+		response.body == "Position should be in range [0,2]"
 	}
 }

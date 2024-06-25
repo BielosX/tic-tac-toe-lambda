@@ -1,5 +1,6 @@
 package org.ttt.commons
 
+import static org.ttt.commons.GameSymbol.CROSS
 import static org.ttt.commons.GameSymbol.NOUGHT
 
 import org.ttt.commons.exceptions.GameAlreadyFinishedException
@@ -21,7 +22,7 @@ class GamesServiceSpec extends Specification {
 	def "should throw exception when game is already finished"() {
 		setup:
 		def client = Mock(DynamoDbClient)
-		GamesService uat = new GamesService(provider, client)
+		GamesService uat = new GamesService(provider, client, new ConstGameSymbolMapper())
 		def playerId = UUID.randomUUID().toString()
 		def gameId = UUID.randomUUID().toString()
 		client.getItem(_) >> GetItemResponse.builder()
@@ -29,7 +30,7 @@ class GamesServiceSpec extends Specification {
 					state: AttributeValue.fromS("FINISHED")
 				]).build()
 		when:
-		uat.commitMove(playerId, gameId, null)
+		uat.commitMove(playerId, gameId, new CommitMoveRequest(1, 0, 0, CROSS))
 
 		then:
 		thrown GameAlreadyFinishedException
@@ -38,7 +39,7 @@ class GamesServiceSpec extends Specification {
 	def "should throw exception when wrong symbol is provided"() {
 		setup:
 		def client = Mock(DynamoDbClient)
-		GamesService uat = new GamesService(provider, client)
+		GamesService uat = new GamesService(provider, client, new ConstGameSymbolMapper())
 		def playerId = UUID.randomUUID().toString()
 		def opponentId = UUID.randomUUID().toString()
 		def gameId = UUID.randomUUID().toString()

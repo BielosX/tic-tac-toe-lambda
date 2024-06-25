@@ -2,6 +2,7 @@ package org.ttt.listgames
 
 import groovy.json.JsonSlurper
 import org.ttt.commons.ApiGatewayEventFactory
+import org.ttt.commons.ConstGameSymbolMapper
 import org.ttt.commons.ConstParametersProvider
 import org.ttt.commons.DynamoDbLocalStackContainer
 import org.ttt.commons.GameGenerator
@@ -30,7 +31,7 @@ class ListGamesSpec extends Specification {
 			"GAMES_COUNT_TABLE_NAME": TableFactory.defaultGamesCountTableName,
 			"MAX_GAMES_COUNT": "10"
 		])
-		def gamesService = new GamesService(parametersProvider, dynamoClient)
+		def gamesService = new GamesService(parametersProvider, dynamoClient, new ConstGameSymbolMapper())
 		generator = new GameGenerator(gamesService)
 		uat = new ListGames(gamesService)
 	}

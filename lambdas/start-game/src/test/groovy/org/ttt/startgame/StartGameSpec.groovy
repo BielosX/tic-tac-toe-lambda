@@ -26,7 +26,7 @@ class StartGameSpec extends Specification {
 			"GAMES_COUNT_TABLE_NAME": TableFactory.defaultGamesCountTableName,
 			"MAX_GAMES_COUNT": "2"
 		])
-		def gameService = new GamesService(parametersProvider, dynamoClient)
+		def gameService = new GamesService(parametersProvider, dynamoClient, new ConstGameSymbolMapper())
 		generator = new GameGenerator(gameService)
 		uat = new StartGame(gameService)
 	}

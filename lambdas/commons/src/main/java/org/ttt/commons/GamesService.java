@@ -1,11 +1,14 @@
 package org.ttt.commons;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.ttt.commons.GameState.FINISHED;
 import static software.amazon.awssdk.enhanced.dynamodb.internal.AttributeValues.numberValue;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.*;
+import java.util.function.IntFunction;
+import java.util.stream.IntStream;
 import lombok.SneakyThrows;
 import org.ttt.commons.exceptions.*;
 import software.amazon.awssdk.enhanced.dynamodb.*;
@@ -80,19 +83,59 @@ public class GamesService {
     return result;
   }
 
+  private boolean symbolsEqual(GameSymbol first, GameSymbol second) {
+    if (first == null || second == null) {
+      return false;
+    }
+    return first == second;
+  }
+
+  private boolean checkLine(GameSymbol[][] symbols, int line) {
+    return symbolsEqual(symbols[0][line], symbols[1][line])
+        && symbolsEqual(symbols[0][line], symbols[2][line]);
+  }
+
+  private boolean checkColumn(GameSymbol[][] symbols, int column) {
+    return symbolsEqual(symbols[column][0], symbols[column][1])
+        && symbolsEqual(symbols[column][0], symbols[column][2]);
+  }
+
+  private boolean checkCross(GameSymbol[][] symbols) {
+    return (symbolsEqual(symbols[0][0], symbols[1][1])
+            && symbolsEqual(symbols[0][0], symbols[2][2]))
+        || (symbolsEqual(symbols[0][2], symbols[1][1])
+            && symbolsEqual(symbols[0][2], symbols[2][0]));
+  }
+
+  private boolean check(IntFunction<Boolean> function) {
+    return IntStream.range(0, 3).mapToObj(function).anyMatch(Boolean::booleanValue);
+  }
+
+  private boolean hasPlayerWon(Game game) {
+    GameSymbol[][] symbols = new GameSymbol[3][3];
+    game.getMoves().forEach(move -> symbols[move.getX()][move.getY()] = move.getSymbol());
+    return checkCross(symbols)
+        || check(i -> checkLine(symbols, i))
+        || check(i -> checkColumn(symbols, i));
+  }
+
   public void commitMove(String gameId, String playerId, CommitMoveRequest request)
       throws GameNotFoundException,
           GameAlreadyFinishedException,
           WrongSymbolException,
           GameRoundDoesNotMatch,
           NotYourTurnException,
-          PositionAlreadyOccupiedException {
+          PositionAlreadyOccupiedException,
+          BadRequestException {
     Game game =
         getGame(gameId)
             .orElseThrow(
                 () ->
                     new GameNotFoundException(String.format("Game with ID %s not found", gameId)));
-    if (game.getState() == GameState.FINISHED) {
+    if (request.positionX() > 2 || request.positionY() > 2) {
+      throw new BadRequestException("Position should be in range [0,2]");
+    }
+    if (game.getState() == FINISHED) {
       throw new GameAlreadyFinishedException(
           String.format("Game with ID %s already finished", game));
     }
@@ -125,14 +168,18 @@ public class GamesService {
     String nextPlayerId =
         game.getPlayerId().equals(playerId) ? game.getOpponentId() : game.getPlayerId();
     Game updatedGame = game.withMoves(moves).withCurrentPlayerId(nextPlayerId);
+    final Game gameToSave =
+        hasPlayerWon(updatedGame)
+            ? updatedGame.withState(FINISHED).withWinnerId(playerId)
+            : updatedGame;
     try {
       gamesTable.updateItem(
           b ->
-              b.item(updatedGame)
+              b.item(gameToSave)
                   .conditionExpression(
                       Expression.builder()
                           .expression("round = :expected")
-                          .putExpressionValue(":expected", numberValue(updatedGame.getRound()))
+                          .putExpressionValue(":expected", numberValue(gameToSave.getRound()))
                           .build()));
     } catch (ConditionalCheckFailedException e) {
       throw new GameRoundDoesNotMatch(
