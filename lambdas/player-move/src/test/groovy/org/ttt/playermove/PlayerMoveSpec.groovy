@@ -2,6 +2,7 @@ package org.ttt.playermove
 
 
 import static org.ttt.commons.GameSymbol.CROSS
+import static org.ttt.commons.MovesGenerator.commitMoves
 
 import org.ttt.commons.*
 import spock.lang.Shared
@@ -219,5 +220,34 @@ class PlayerMoveSpec extends Specification {
 		then:
 		response.statusCode == 400
 		response.body == "Position should be in range [0,2]"
+	}
+
+	def "should change game state to FINISHED and set winnerId when game is finished"() {
+		given:
+		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
+		commitMoves(gamesService, gameId, playerId, opponentId, [
+			[0, 0],
+			[0, 1],
+			[1, 0],
+			[1, 1]
+		])
+		def body = """
+        {
+            "round": 5,
+            "positionX": 2,
+            "positionY": 0,
+            "symbol": "CROSS"
+        }
+		""".stripIndent()
+		def event = ApiGatewayEventFactory.create(body, playerId)
+		event.pathParameters = [gameId: gameId]
+
+		when:
+		uat.handleRequest(event, null)
+		def game = gamesService.getGame(gameId).get()
+
+		then:
+		game.winnerId == playerId
+		game.state == GameState.FINISHED
 	}
 }
