@@ -250,4 +250,37 @@ class PlayerMoveSpec extends Specification {
 		game.winnerId == playerId
 		game.state == GameState.FINISHED
 	}
+
+	def "should change game state to FINISHED and set winnerId to null on draw"() {
+		given:
+		def gameId = gamesService.createNewGame(new CreateGameRequest(playerId, opponentId)).gameId
+		commitMoves(gamesService, gameId, playerId, opponentId, [
+			[0, 0],
+			[1, 0],
+			[2, 0],
+			[1, 1],
+			[1, 2],
+			[0, 1],
+			[2, 1],
+			[2, 2]
+		])
+		def body = """
+        {
+            "round": 9,
+            "positionX": 0,
+            "positionY": 2,
+            "symbol": "CROSS"
+        }
+		""".stripIndent()
+		def event = ApiGatewayEventFactory.create(body, playerId)
+		event.pathParameters = [gameId: gameId]
+
+		when:
+		uat.handleRequest(event, null)
+		def game = gamesService.getGame(gameId).get()
+
+		then:
+		game.winnerId == null
+		game.state == GameState.FINISHED
+	}
 }

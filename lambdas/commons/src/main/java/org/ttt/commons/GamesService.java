@@ -168,9 +168,11 @@ public class GamesService {
     String nextPlayerId =
         game.getPlayerId().equals(playerId) ? game.getOpponentId() : game.getPlayerId();
     Game updatedGame = game.withMoves(moves).withCurrentPlayerId(nextPlayerId);
+    int numberOfMoves = moves.size();
+    String winnerId = !hasPlayerWon(updatedGame) && numberOfMoves == 9 ? null : playerId;
     final Game gameToSave =
-        hasPlayerWon(updatedGame)
-            ? updatedGame.withState(FINISHED).withWinnerId(playerId)
+        hasPlayerWon(updatedGame) || numberOfMoves == 9
+            ? updatedGame.withState(FINISHED).withWinnerId(winnerId)
             : updatedGame;
     try {
       gamesTable.updateItem(
