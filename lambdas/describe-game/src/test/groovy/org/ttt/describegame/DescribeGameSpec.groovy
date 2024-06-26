@@ -9,10 +9,10 @@ class DescribeGameSpec extends Specification {
 	GamesService gameService = Stub()
 	def uat = new DescribeGame(gameService)
 	def playerId = UUID.randomUUID().toString()
+	def gameId = UUID.randomUUID().toString()
 
 	def "should return 404 when game not found"() {
 		given:
-		def gameId = UUID.randomUUID().toString()
 		def request = ApiGatewayEventFactory.create("", playerId)
 		request.pathParameters = [gameId: gameId]
 
@@ -25,7 +25,6 @@ class DescribeGameSpec extends Specification {
 
 	def "should return 200 when game found"() {
 		given:
-		def gameId = UUID.randomUUID().toString()
 		gameService.getGame(gameId) >> Optional.of(Game.builder()
 				.gameId(gameId)
 				.build())
