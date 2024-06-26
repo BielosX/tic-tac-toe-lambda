@@ -18,7 +18,9 @@ subprojects {
 	apply plugin: "com.diffplug.spotless"
 	apply plugin: "com.adarshr.test-logger"
 	java {
-		sourceCompatibility = '17'
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(17)
+		}
 	}
 
 	spotless {
