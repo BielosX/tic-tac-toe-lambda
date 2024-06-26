@@ -82,6 +82,7 @@ project('bdd') {
 tasks.register('copyPreCommitHook', Copy) {
 	from file("${projectDir}/scripts/pre-commit")
 	into "${projectDir}/.git/hooks"
+	fileMode 0777
 }
 
 build.dependsOn copyPreCommitHook
