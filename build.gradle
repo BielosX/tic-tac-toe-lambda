@@ -78,3 +78,10 @@ project('bdd') {
 		}
 	}
 }
+
+tasks.register('copyPreCommitHook', Copy) {
+	from file("${projectDir}/scripts/pre-commit")
+	into "${projectDir}/.git/hooks"
+}
+
+build.dependsOn copyPreCommitHook

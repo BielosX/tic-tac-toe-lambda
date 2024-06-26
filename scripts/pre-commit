@@ -1,0 +1,3 @@
+#!/bin/bash
+
+./gradlew spotlessJavaCheck spotlessGroovyCheck spotlessGroovyGradleCheck
