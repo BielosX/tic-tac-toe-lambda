@@ -65,6 +65,9 @@ configure(subprojects.findAll {
 		testImplementation platform('org.spockframework:spock-bom:2.4-M4-groovy-4.0')
 		testImplementation 'org.spockframework:spock-core'
 		testImplementation "org.testcontainers:localstack:1.19.8"
+
+		testImplementation 'net.bytebuddy:byte-buddy:1.14.17'
+		testImplementation 'org.objenesis:objenesis:3.4'
 	}
 }
 

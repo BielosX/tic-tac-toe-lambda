@@ -15,8 +15,16 @@ import org.ttt.commons.SubjectAwareRequestHandler;
 @SuppressWarnings("unused")
 public class DescribeGame extends SubjectAwareRequestHandler {
   private static final String GAME_ID_PARAM = "gameId";
-  private final GamesService gamesService = new GamesService();
+  private final GamesService gamesService;
   private final ObjectMapper objectMapper = ObjectMapperFactory.create();
+
+  public DescribeGame() {
+    this.gamesService = new GamesService();
+  }
+
+  public DescribeGame(GamesService gamesService) {
+    this.gamesService = gamesService;
+  }
 
   protected APIGatewayV2HTTPResponse handleRequestWithSubject(
       String subject, APIGatewayV2HTTPEvent event, Context context) {
