@@ -1,3 +1,3 @@
 #!/bin/bash
 
-./gradlew spotlessJavaCheck spotlessGroovyCheck spotlessGroovyGradleCheck
+./gradlew --console=verbose spotlessJavaCheck spotlessGroovyCheck spotlessGroovyGradleCheck
