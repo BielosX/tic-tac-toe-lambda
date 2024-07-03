@@ -32,4 +32,4 @@ build
 .gradle
 
 index.html
-!gradle-wrapper.jar
+!gradle-wrapper.jarnode_modules
