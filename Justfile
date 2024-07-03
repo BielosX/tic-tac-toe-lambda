@@ -44,7 +44,7 @@ tofu-init-lambda:
 
 deploy-packages: deploy-artifacts-bucket
     #!/bin/bash -e
-    {{ justfile_directory() }}/gradlew clean build :commons:buildZip copyJar
+    {{ justfile_directory() }}/gradlew clean build :commons:buildZip copyJar -x test
     artifacts_bucket=$(tofu -chdir="{{ justfile_directory() }}/infra/live/artifacts-bucket" output -raw bucket_id)
     export PIPENV_PIPFILE="{{ justfile_directory() }}/scripts/Pipfile"
     pipenv install
