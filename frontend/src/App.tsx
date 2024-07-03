@@ -9,7 +9,7 @@ function App() {
   const [hello, setHello] = useState("")
 
   useEffect(() =>  {
-    axios.get('api/v1/games')
+    axios.get('v1/games')
       .then(result => {
         setHello(result.data)
       })
