@@ -6,7 +6,23 @@ const port = 8080
 const router = new Router()
 
 router.get('/games', (req, res) => {
-  res.send('Hello')
+  res.json({
+    games: [
+      {
+        gameId: '0f88febb-7303-4671-947d-5747170c3a1d',
+        playerId: '63ec48d4-9983-4ab1-b89c-1cf85f601b0d',
+        opponentId: 'f010c766-e5e7-43b9-9210-82c037b9134c',
+        round: 1,
+        lastUpdate: '2024-07-04T10:38:29+0000',
+        created: '2024-07-04T10:38:29+0000',
+        symbolMapping: {
+          '63ec48d4-9983-4ab1-b89c-1cf85f601b0d': 'CROSS',
+          'f010c766-e5e7-43b9-9210-82c037b9134c': 'NOUGHT',
+        },
+        currentPlayerId: '63ec48d4-9983-4ab1-b89c-1cf85f601b0d',
+      },
+    ],
+  })
 })
 
 app.use('/v1', router)
