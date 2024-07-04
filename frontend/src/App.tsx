@@ -1,16 +1,16 @@
-import {useEffect, useState} from 'react'
+import { useEffect, useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
-import axios from "axios";
+import axios from 'axios'
 
 function App() {
   const [count, setCount] = useState(0)
-  const [hello, setHello] = useState("")
+  const [hello, setHello] = useState('')
 
-  useEffect(() =>  {
+  useEffect(() => {
     axios.get('v1/games')
-      .then(result => {
+      .then((result) => {
         setHello(result.data)
       })
   }, [])
@@ -27,11 +27,17 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+        <button onClick={() => setCount(count => count + 1)}>
+          count is
+          {' '}
+          {count}
         </button>
         <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
+          Edit
+          {' '}
+          <code>src/App.tsx</code>
+          {' '}
+          and save to test HMR
         </p>
       </div>
       <p className="read-the-docs">

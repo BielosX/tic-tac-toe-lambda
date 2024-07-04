@@ -9,8 +9,8 @@ export default defineConfig({
     proxy: {
       '/v1': {
         target: 'http://localhost:8080',
-        changeOrigin: true
-      }
-    }
-  }
+        changeOrigin: true,
+      },
+    },
+  },
 })
