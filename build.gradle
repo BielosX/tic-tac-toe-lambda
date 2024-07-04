@@ -81,8 +81,8 @@ project('bdd') {
 	}
 }
 
-tasks.register('copyPreCommitHook', Copy) {
-	from file("${projectDir}/scripts/pre-commit")
+tasks.register('prepare', Copy) {
+	from file("${projectDir}/hooks/pre-commit")
 	into "${projectDir}/.git/hooks"
 	filePermissions {
 		user {
@@ -97,4 +97,4 @@ tasks.register('copyPreCommitHook', Copy) {
 	}
 }
 
-build.dependsOn copyPreCommitHook
+build.dependsOn prepare
