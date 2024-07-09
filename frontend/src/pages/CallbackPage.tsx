@@ -1,5 +1,5 @@
 import { Container, Typography } from '@mui/material'
-import {FC} from "react";
+import { FC } from 'react'
 
 export const CallbackPage: FC = () => {
   return (
