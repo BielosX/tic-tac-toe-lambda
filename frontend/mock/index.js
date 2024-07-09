@@ -1,5 +1,4 @@
 import express, { Router } from 'express'
-import * as jose from 'jose'
 
 const app = express()
 const port = 8080
@@ -8,9 +7,10 @@ app.use((req, res, next) => {
   const authorization = req.get('Authorization')
   if (authorization) {
     const token = authorization.trim().split(/\s+/)[1]
-    const claims = jose.decodeJwt(token)
+    // eslint-disable-next-line no-undef
+    const payload = Buffer.from(token.split('.')[1], 'base64').toString('ascii')
     console.log(`Received JWT: ${token}`)
-    console.log(`Claims: ${JSON.stringify(claims)}`)
+    console.log(`Claims: ${payload}`)
   }
   next()
 })
