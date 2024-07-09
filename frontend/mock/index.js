@@ -1,7 +1,19 @@
 import express, { Router } from 'express'
+import * as jose from 'jose'
 
 const app = express()
 const port = 8080
+
+app.use((req, res, next) => {
+  const authorization = req.get('Authorization')
+  if (authorization) {
+    const token = authorization.trim().split(/\s+/)[1]
+    const claims = jose.decodeJwt(token)
+    console.log(`Received JWT: ${token}`)
+    console.log(`Claims: ${JSON.stringify(claims)}`)
+  }
+  next()
+})
 
 const router = new Router()
 
