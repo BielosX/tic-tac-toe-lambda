@@ -32,4 +32,5 @@ build
 .gradle
 
 index.html
+!frontend/index.html
 !gradle-wrapper.jarnode_modules
