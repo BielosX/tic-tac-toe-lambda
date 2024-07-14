@@ -1,6 +1,7 @@
 import { AppBar, AppBarProps, styled } from '@mui/material'
 
 export const StyledAppBar = styled(AppBar)<AppBarProps>(() => ({
-  minHeight: 50,
-  padding: 15,
+  height: '7vh',
+  paddingLeft: 15,
+  paddingRight: 15,
 }))
