@@ -6,6 +6,7 @@ import { useAuth0 } from '@auth0/auth0-react'
 import { LoginButton } from './LoginButton.tsx'
 import { SignupButton } from './SignupButton.tsx'
 import MenuIcon from '@mui/icons-material/Menu'
+import { UserAvatar } from './UserAvatar.tsx'
 
 export const TopBar: FC = () => {
   const { page } = useContext(AppContext)
@@ -40,6 +41,9 @@ export const TopBar: FC = () => {
               <LoginButton />
               <SignupButton />
             </Stack>
+          )}
+          {isAuthenticated && (
+            <UserAvatar />
           )}
         </Stack>
       </StyledAppBar>
