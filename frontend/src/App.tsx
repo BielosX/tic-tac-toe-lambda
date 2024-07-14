@@ -4,8 +4,7 @@ import { CallbackPage } from './pages/CallbackPage.tsx'
 import { FC, useState } from 'react'
 import { AppContext } from './AppContext.ts'
 import { TopBar } from './components/TopBar.tsx'
-import { Container } from '@mui/material'
-import { grey } from '@mui/material/colors'
+import { StyledContainer } from './components/StyledContainer.ts'
 
 const App: FC = () => {
   const [page, setPage] = useState('')
@@ -16,12 +15,12 @@ const App: FC = () => {
     }}
     >
       <TopBar />
-      <Container sx={{ backgroundColor: grey['50'], height: '93vh' }}>
+      <StyledContainer>
         <Routes>
           <Route path="/" element={<HomePage />} />
           <Route path="/callback" element={<CallbackPage />} />
         </Routes>
-      </Container>
+      </StyledContainer>
     </AppContext.Provider>
   )
 }
