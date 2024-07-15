@@ -1,6 +1,6 @@
-import { createContext } from 'react'
+import { createContext, useContext } from 'react'
 
-interface AppContextProps {
+export interface AppContextProps {
   page: string
   setPage: (page: string) => void
 }
@@ -9,3 +9,7 @@ export const AppContext = createContext<AppContextProps>({
   page: '',
   setPage: () => {},
 })
+
+export const useAppContext = () => {
+  return useContext(AppContext)
+}

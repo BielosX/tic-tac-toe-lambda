@@ -1,27 +1,17 @@
-import { Route, Routes } from 'react-router-dom'
-import { HomePage } from './pages/HomePage.tsx'
-import { CallbackPage } from './pages/CallbackPage.tsx'
-import { FC, useState } from 'react'
-import { AppContext } from './AppContext.ts'
+import { FC } from 'react'
 import { TopBar } from './components/TopBar.tsx'
 import { StyledContainer } from './components/StyledContainer.ts'
+import { AppRoutes } from './AppRoutes.tsx'
+import { AppContextProvider } from './AppContextProvider.tsx'
 
 const App: FC = () => {
-  const [page, setPage] = useState('')
   return (
-    <AppContext.Provider value={{
-      page,
-      setPage,
-    }}
-    >
+    <AppContextProvider>
       <TopBar />
       <StyledContainer>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-          <Route path="/callback" element={<CallbackPage />} />
-        </Routes>
+        <AppRoutes />
       </StyledContainer>
-    </AppContext.Provider>
+    </AppContextProvider>
   )
 }
 

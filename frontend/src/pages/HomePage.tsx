@@ -1,9 +1,9 @@
 import { Typography } from '@mui/material'
-import { FC, useContext, useEffect } from 'react'
-import { AppContext } from '../AppContext.ts'
+import { FC, useEffect } from 'react'
+import { useAppContext } from '../AppContext.ts'
 
 export const HomePage: FC = () => {
-  const { setPage } = useContext(AppContext)
+  const { setPage } = useAppContext()
 
   useEffect(() => {
     setPage('Home')
