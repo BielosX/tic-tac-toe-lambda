@@ -1,4 +1,4 @@
-import { createContext, useContext } from 'react'
+import { createContext, useContext, useEffect } from 'react'
 
 export interface AppContextProps {
   page: string
@@ -12,4 +12,12 @@ export const AppContext = createContext<AppContextProps>({
 
 export const useAppContext = () => {
   return useContext(AppContext)
+}
+
+export const usePage = (page: string) => {
+  const { setPage } = useAppContext()
+
+  useEffect(() => {
+    setPage(page)
+  }, [page, setPage])
 }

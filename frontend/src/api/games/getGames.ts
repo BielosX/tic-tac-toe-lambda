@@ -13,10 +13,11 @@ export interface GamesListResponse {
   games: Array<GameResponse>
 }
 
-export const getGames = async (token: string, nextPageToken: string | undefined, limit: number): Promise<GamesListResponse> => {
+export const getGames = async (token: string, nextPageToken: string | undefined, limit: number, asOpponent: boolean): Promise<GamesListResponse> => {
   const response = await fetch(`v1/games?${queryString.stringify({
     limit,
     nextPageToken,
+    asOpponent,
   })}`, {
     headers: {
       'Content-Type': 'application/json',

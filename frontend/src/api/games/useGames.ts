@@ -9,16 +9,17 @@ export const useGames = () => {
   const [loaded, setLoaded] = useState<boolean>(false)
   const [data, setData] = useState<GamesListResponse | null>(null)
   const [error, setError] = useState()
+  const [asOpponent, setAsOpponent] = useState(false)
 
   useEffect(() => {
     getAccessTokenSilently()
-      .then(token => getGames(token, nextPageToken, limit))
+      .then(token => getGames(token, nextPageToken, limit, asOpponent))
       .then((response) => {
         setData(response)
         setLoaded(true)
       })
       .catch(error => setError(error))
-  }, [getAccessTokenSilently, nextPageToken, limit])
+  }, [getAccessTokenSilently, nextPageToken, limit, asOpponent])
 
   return {
     setLimit,
@@ -26,5 +27,6 @@ export const useGames = () => {
     loaded,
     data,
     error,
+    setAsOpponent,
   }
 }

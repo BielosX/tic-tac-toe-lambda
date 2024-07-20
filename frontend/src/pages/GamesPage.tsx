@@ -1,25 +1,25 @@
-import { FC, useEffect } from 'react'
-import { useGames } from '../api/games/useGames.ts'
-import { CircularProgress, Typography } from '@mui/material'
-import { useAppContext } from '../AppContext.ts'
+import { FC, SyntheticEvent, useState } from 'react'
+import { usePage } from '../AppContext.ts'
+import { GamesList } from '../components/GamesList.tsx'
+import { Box, Tab, Tabs } from '@mui/material'
 
 export const GamesPage: FC = () => {
-  const { data, loaded } = useGames()
-  const { setPage } = useAppContext()
+  usePage('Games')
+  const [tabIndex, setTabIndex] = useState<number>(0)
 
-  useEffect(() => {
-    setPage('Games')
-  }, [setPage])
-
-  if (!loaded) {
-    return (
-      <CircularProgress />
-    )
+  const onTabChange = (_: SyntheticEvent, value: number) => {
+    setTabIndex(value)
   }
 
   return (
     <>
-      {data?.games.map(game => <Typography>{game.gameId}</Typography>)}
+      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+        <Tabs onChange={onTabChange}>
+          <Tab label="Created" value="1" />
+          <Tab label="Joined" value="2" />
+        </Tabs>
+      </Box>
+      <GamesList asOpponent={tabIndex === 1} />
     </>
   )
 }
