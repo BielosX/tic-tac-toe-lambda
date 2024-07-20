@@ -1,10 +1,8 @@
-import { Typography } from '@mui/material'
 import { FC } from 'react'
+import { Spinner } from '../components/Spinner.tsx'
 
 export const CallbackPage: FC = () => {
   return (
-    <Typography>
-      Callback
-    </Typography>
+    <Spinner />
   )
 }

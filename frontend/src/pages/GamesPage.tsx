@@ -5,7 +5,7 @@ import { Box, Tab, Tabs } from '@mui/material'
 
 export const GamesPage: FC = () => {
   usePage('Games')
-  const [tabIndex, setTabIndex] = useState<number>(0)
+  const [tabIndex, setTabIndex] = useState<number>(1)
 
   const onTabChange = (_: SyntheticEvent, value: number) => {
     setTabIndex(value)
@@ -14,9 +14,9 @@ export const GamesPage: FC = () => {
   return (
     <>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs onChange={onTabChange}>
-          <Tab label="Created" value="1" />
-          <Tab label="Joined" value="2" />
+        <Tabs onChange={onTabChange} value={tabIndex}>
+          <Tab label="Created" value={1} />
+          <Tab label="Joined" value={2} />
         </Tabs>
       </Box>
       <GamesList asOpponent={tabIndex === 1} />
