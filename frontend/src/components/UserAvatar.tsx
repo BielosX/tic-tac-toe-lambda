@@ -1,6 +1,6 @@
 import React, { FC, useState } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
-import { Avatar, IconButton, Menu, MenuItem, Typography } from '@mui/material'
+import { Avatar, IconButton, Menu, MenuItem, Stack, Typography } from '@mui/material'
 
 export const UserAvatar: FC = () => {
   const { user, logout } = useAuth0()
@@ -35,6 +35,12 @@ export const UserAvatar: FC = () => {
         open={Boolean(anchorElUser)}
         onClose={handleCloseUserMenu}
       >
+        <MenuItem divider={true} style={{ pointerEvents: 'none' }}>
+          <Stack direction="column">
+            <Typography variant="h6">{ user?.nickname }</Typography>
+            <Typography>{ user?.email }</Typography>
+          </Stack>
+        </MenuItem>
         <MenuItem onClick={handleLogout}>
           <Typography>Logout</Typography>
         </MenuItem>

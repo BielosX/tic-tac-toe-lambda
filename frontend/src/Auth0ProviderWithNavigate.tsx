@@ -37,6 +37,7 @@ export const Auth0ProviderWithNavigate = (props: Auth0ProviderWithNavigateProper
         audience,
       }}
       onRedirectCallback={onRedirectCallback}
+      useRefreshTokens={true}
     >
       {props.children}
     </Auth0Provider>

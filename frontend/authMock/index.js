@@ -57,7 +57,7 @@ const generateResponse = async () => {
     .setIssuer(issuer)
     .setSubject(subject)
     .setAudience(audience)
-    .setExpirationTime('2h')
+    .setExpirationTime('1m')
     .sign(privateKey)
   const idToken = await new jose.SignJWT({
     picture: 'https://www.google.com/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png',
@@ -74,18 +74,23 @@ const generateResponse = async () => {
     .setIssuer(issuer)
     .setSubject(subject)
     .setAudience(authState.clientId)
-    .setExpirationTime('2h')
+    .setExpirationTime('1m')
     .sign(privateKey)
   return {
     access_token: accessToken,
     id_token: idToken,
     scope: authState.scope,
-    expires_in: 2 * 60 * 60,
+    expires_in: 60,
     token_type: 'Bearer',
+    refresh_token: uuidv4(),
   }
 }
 
 app.post('/oauth/token', (req, res, next) => {
+  const refreshToken = req.query.refresh_token
+  if (refreshToken) {
+    console.log(`Received refresh token: ${refreshToken}`)
+  }
   generateResponse()
     .then((result) => {
       console.log(`Returning token: ${JSON.stringify(result)}`)
