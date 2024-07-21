@@ -1,4 +1,4 @@
-import * as jose from "jose";
+import * as jose from 'jose'
 
 export const alg = 'RS256'
 

@@ -1,7 +1,7 @@
 import { FC } from 'react'
 import { useAuth0 } from '@auth0/auth0-react'
 import { Button } from '@mui/material'
-import {gamesPage} from "../router.tsx";
+import { gamesPage } from '../router.tsx'
 
 export const SignupButton: FC = () => {
   const { loginWithRedirect } = useAuth0()

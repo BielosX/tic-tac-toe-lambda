@@ -2,7 +2,7 @@ import express from 'express'
 import cors from 'cors'
 import * as jose from 'jose'
 import { v4 as uuidv4 } from 'uuid'
-import {alg, privateKey} from "./privateKey.js";
+import { alg, privateKey } from './privateKey.js'
 
 const app = express()
 const port = 8080
