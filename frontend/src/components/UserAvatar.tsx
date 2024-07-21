@@ -32,10 +32,6 @@ export const UserAvatar: FC = () => {
       <Menu
         keepMounted
         anchorEl={anchorElUser}
-        anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
-        }}
         open={Boolean(anchorElUser)}
         onClose={handleCloseUserMenu}
       >
