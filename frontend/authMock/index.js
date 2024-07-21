@@ -60,7 +60,7 @@ app.get('/authorize', (req, res, next) => {
   authState.nonce = req.query.nonce
   authState.scope = req.query.scope
   console.log(`Received state ${state}`)
-  sleep(2000)
+  sleep(1000)
     .then(() => {
       res.status(302)
         .header('Location', redirect_uri)
@@ -132,7 +132,7 @@ app.get('/v2/logout', (req, res, next) => {
     audience: '',
   }
   const returnTo = req.query.returnTo
-  sleep(2000)
+  sleep(1000)
     .then(() => {
       res.status(302).header('Location', returnTo).send()
     }).catch(next)
