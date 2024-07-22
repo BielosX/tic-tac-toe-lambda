@@ -1,12 +1,12 @@
 import { AppState, Auth0Provider, User } from '@auth0/auth0-react'
 import { useNavigate } from 'react-router-dom'
-import { ReactNode } from 'react'
+import { ReactNode, useCallback } from 'react'
 
 interface Auth0ProviderWithNavigateProperties {
   children: ReactNode
 }
 
-export const Auth0ProviderWithNavigate = (props: Auth0ProviderWithNavigateProperties) => {
+export const Auth0ProviderWithNavigate = ({ children }: Auth0ProviderWithNavigateProperties) => {
   const navigate = useNavigate()
 
   const domain = import.meta.env.VITE_AUTH0_DOMAIN
@@ -14,11 +14,11 @@ export const Auth0ProviderWithNavigate = (props: Auth0ProviderWithNavigateProper
   const callbackUrl = import.meta.env.VITE_AUTH0_CALLBACK_URL
   const audience = import.meta.env.VITE_AUTH0_AUDIENCE
 
-  const onRedirectCallback = (appState?: AppState, user?: User) => {
+  const onRedirectCallback = useCallback((appState?: AppState, user?: User) => {
     console.log(`AppState: ${JSON.stringify(appState)}`)
     console.log(`User: ${JSON.stringify(user)}`)
     navigate(appState?.returnTo || window.location.pathname)
-  }
+  }, [navigate])
 
   if (!(domain && clientId && callbackUrl && audience)) {
     return null
@@ -39,7 +39,7 @@ export const Auth0ProviderWithNavigate = (props: Auth0ProviderWithNavigateProper
       onRedirectCallback={onRedirectCallback}
       useRefreshTokens={true}
     >
-      {props.children}
+      { children }
     </Auth0Provider>
   )
 }
