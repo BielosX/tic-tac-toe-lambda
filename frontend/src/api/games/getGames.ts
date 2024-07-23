@@ -5,7 +5,8 @@ export interface GameResponse {
   playerId: string
   opponentId: string
   round: number
-  gameState: string
+  state: string
+  created: string
 }
 
 export interface GamesListResponse {

@@ -13,11 +13,26 @@ export const handlers = [
           round: 1,
           lastUpdate: '2024-07-04T10:38:29+0000',
           created: '2024-07-04T10:38:29+0000',
+          state: 'FINISHED',
           symbolMapping: {
             [playerId]: 'CROSS',
             [opponentId]: 'NOUGHT',
           },
           currentPlayerId: playerId,
+        },
+        {
+          gameId: crypto.randomUUID(),
+          playerId,
+          opponentId,
+          round: 2,
+          lastUpdate: '2024-08-04T12:50:29+0000',
+          created: '2024-08-04T11:38:29+0000',
+          state: 'ACTIVE',
+          symbolMapping: {
+            [playerId]: 'CROSS',
+            [opponentId]: 'NOUGHT',
+          },
+          currentPlayerId: opponentId,
         },
       ],
     })
