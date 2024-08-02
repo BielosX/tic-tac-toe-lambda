@@ -3,11 +3,12 @@ import Fastify from 'fastify'
 import cookie from '@fastify/cookie'
 import formbody from '@fastify/formbody'
 import * as jose from 'jose'
-import {v4 as uuidv4} from 'uuid'
-import {alg, privateKey} from './privateKey.js'
+import { v4 as uuidv4 } from 'uuid'
+import process from 'node:process'
+import { alg, privateKey } from './privateKey.js'
 
 const fastify = Fastify({
-  logger: true
+  logger: true,
 })
 await fastify.register(cors, {})
 await fastify.register(cookie, {})
@@ -38,9 +39,9 @@ fastify.get('/authorize', async (req, res) => {
   console.log(`Received state ${state}`)
   await sleep(1000)
   res.status(302)
-      .header('Location', redirect_uri)
-      .cookie(authenticated, true)
-      .send()
+    .header('Location', redirect_uri)
+    .cookie(authenticated, true)
+    .send()
 })
 
 const generateResponse = async () => {
@@ -114,7 +115,8 @@ fastify.get('/v2/logout', async (req, res) => {
 try {
   await fastify.listen({ port })
   console.log(`Auth Mock app listening on port ${port}`)
-} catch (err) {
+}
+catch (err) {
   fastify.log.error(err)
   process.exit(1)
 }
