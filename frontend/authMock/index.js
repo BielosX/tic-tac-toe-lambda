@@ -2,6 +2,7 @@ import cors from '@fastify/cors'
 import Fastify from 'fastify'
 import cookie from '@fastify/cookie'
 import formbody from '@fastify/formbody'
+import Etag from '@fastify/etag'
 import * as jose from 'jose'
 import { v4 as uuidv4 } from 'uuid'
 import process from 'node:process'
@@ -13,6 +14,9 @@ const fastify = Fastify({
 await fastify.register(cors, {})
 await fastify.register(cookie, {})
 await fastify.register(formbody, {})
+await fastify.register(Etag, {
+  replyWith304: false,
+})
 
 const port = 8080
 
