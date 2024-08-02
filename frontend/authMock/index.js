@@ -1,10 +1,18 @@
-import express from 'express'
-import cors from 'cors'
+import cors from '@fastify/cors'
+import Fastify from 'fastify'
+import cookie from '@fastify/cookie'
+import formbody from '@fastify/formbody'
 import * as jose from 'jose'
-import { v4 as uuidv4 } from 'uuid'
-import { alg, privateKey } from './privateKey.js'
+import {v4 as uuidv4} from 'uuid'
+import {alg, privateKey} from './privateKey.js'
 
-const app = express()
+const fastify = Fastify({
+  logger: true
+})
+await fastify.register(cors, {})
+await fastify.register(cookie, {})
+await fastify.register(formbody, {})
+
 const port = 8080
 
 let authState = {
@@ -14,13 +22,11 @@ let authState = {
   audience: '',
 }
 
-app.use(cors())
-
 const sleep = (ms) => {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
 
-app.get('/authorize', (req, res, next) => {
+fastify.get('/authorize', async (req, res) => {
   const state = req.query.state
   authState.clientId = req.query.client_id
   const code = uuidv4()
@@ -30,14 +36,11 @@ app.get('/authorize', (req, res, next) => {
   authState.nonce = req.query.nonce
   authState.scope = req.query.scope
   console.log(`Received state ${state}`)
-  sleep(1000)
-    .then(() => {
-      res.status(302)
-        .header('Location', redirect_uri)
-        .cookie(authenticated, true)
-        .send()
-    })
-    .catch(next)
+  await sleep(1000)
+  res.status(302)
+      .header('Location', redirect_uri)
+      .cookie(authenticated, true)
+      .send()
 })
 
 const generateResponse = async () => {
@@ -86,20 +89,17 @@ const generateResponse = async () => {
   }
 }
 
-app.post('/oauth/token', (req, res, next) => {
+fastify.post('/oauth/token', async (req, res) => {
   const refreshToken = req.query.refresh_token
   if (refreshToken) {
     console.log(`Received refresh token: ${refreshToken}`)
   }
-  generateResponse()
-    .then((result) => {
-      console.log(`Returning token: ${JSON.stringify(result)}`)
-      res.send(result)
-    })
-    .catch(next)
+  const result = await generateResponse()
+  console.log(`Returning token: ${JSON.stringify(result)}`)
+  res.send(result)
 })
 
-app.get('/v2/logout', (req, res, next) => {
+fastify.get('/v2/logout', async (req, res) => {
   authState = {
     nonce: '',
     scope: '',
@@ -107,12 +107,14 @@ app.get('/v2/logout', (req, res, next) => {
     audience: '',
   }
   const returnTo = req.query.returnTo
-  sleep(1000)
-    .then(() => {
-      res.status(302).header('Location', returnTo).send()
-    }).catch(next)
+  await sleep(1000)
+  res.status(302).header('Location', returnTo).send()
 })
 
-app.listen(port, () => {
+try {
+  await fastify.listen({ port })
   console.log(`Auth Mock app listening on port ${port}`)
-})
+} catch (err) {
+  fastify.log.error(err)
+  process.exit(1)
+}
